@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mad Gab</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #14121f; --panel: #221f33; --text: #f4f1ff; --muted: #a29cc0;
+    --accent: #ffcc33; --good: #3ecf8e; --bad: #ff6b6b; --line: #3a3654;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 17px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column; min-height: 100dvh;
+  }
+  header { padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0; font-size: 20px; letter-spacing: .5px; }
+  header h1 span { color: var(--accent); }
+  header .status { margin-left: auto; font-size: 14px; color: var(--muted); }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--bad); margin-right: 6px; vertical-align: middle; }
+  .dot.on { background: var(--good); }
+  main { flex: 1; display: flex; flex-direction: column; padding: 16px; gap: 16px; max-width: 900px; width: 100%; margin: 0 auto; }
+  .hidden { display: none !important; }
+  .panel { background: var(--panel); border-radius: 14px; padding: 18px; }
+  button {
+    font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 14px 18px;
+    background: var(--line); color: var(--text); cursor: pointer;
+  }
+  button:active { transform: scale(.98); }
+  button:disabled { opacity: .4; cursor: default; }
+  button.primary { background: var(--accent); color: #1a1600; }
+  button.good { background: var(--good); color: #002414; }
+  button.bad { background: var(--bad); color: #2a0000; }
+  input, select {
+    font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 12px; width: 100%;
+  }
+  label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row > * { flex: 1 1 160px; }
+  .big-choice { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 560px) { .big-choice { grid-template-columns: 1fr; } }
+  .big-choice button { padding: 28px 18px; font-size: 22px; text-align: left; }
+  .big-choice button small { display: block; font-weight: 400; font-size: 15px; opacity: .75; margin-top: 6px; }
+  .code { font: 700 44px/1 ui-monospace, Menlo, monospace; letter-spacing: 8px; color: var(--accent); }
+  .muted { color: var(--muted); }
+  .center { text-align: center; }
+  #qr { background: #fff; padding: 10px; border-radius: 10px; display: inline-block; }
+  #qr img, #qr canvas { display: block; }
+
+  .scorebar { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .team { background: var(--panel); border-radius: 12px; padding: 8px 14px; text-align: center; min-width: 110px; border: 2px solid transparent; }
+  .team.current { border-color: var(--accent); }
+  .team b { display: block; font-size: 26px; }
+  .clock { font: 700 64px/1 ui-monospace, Menlo, monospace; text-align: center; }
+  .clock.low { color: var(--bad); }
+  .puzzle {
+    font-weight: 800; text-align: center; line-height: 1.15;
+    font-size: clamp(34px, 9vw, 84px); padding: 24px 8px; word-break: break-word;
+  }
+  .answer { text-align: center; font-size: clamp(22px, 5vw, 36px); color: var(--good); font-weight: 700; }
+  .answer-label { text-align: center; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .actions button { padding: 26px; font-size: 24px; }
+  .results { list-style: none; padding: 0; margin: 0; }
+  .results li { padding: 8px 0; border-bottom: 1px solid var(--line); display: flex; gap: 10px; }
+  .results li .mark { width: 22px; flex: none; font-weight: 800; }
+  .results li.got .mark { color: var(--good); }
+  .results li.skip .mark { color: var(--bad); }
+  .results .p { color: var(--muted); font-size: 15px; }
+  .viewer-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+  .banner { text-align: center; font-size: 26px; font-weight: 700; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Mad <span>Gab</span></h1>
+  <div class="status" id="status"></div>
+</header>
+
+<main>
+  <!-- Choose a role -->
+  <section id="home">
+    <div class="big-choice">
+      <button class="primary" id="btnProctor">Proctor<small>Runs the game. Sees the answers, taps Got It or Skip.</small></button>
+      <button id="btnViewer">Viewer<small>The screen the team reads. Shows only the puzzle.</small></button>
+    </div>
+    <p class="muted center" style="margin-top:24px">Open this page on two devices. One is the proctor, the other joins with the room code.</p>
+  </section>
+
+  <!-- Viewer: join -->
+  <section id="join" class="hidden panel">
+    <label for="joinCode">Room code (shown on the proctor's screen)</label>
+    <div class="row">
+      <input id="joinCode" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="ABCD" style="font-size:28px;letter-spacing:6px;text-transform:uppercase">
+      <button class="primary" id="btnJoin" style="flex:0 0 auto">Join</button>
+    </div>
+    <p class="muted" id="joinMsg"></p>
+  </section>
+
+  <!-- Viewer: game screen -->
+  <section id="viewer" class="hidden viewer-stage">
+    <div class="scorebar" id="vScores"></div>
+    <div class="clock" id="vClock">2:00</div>
+    <div class="puzzle" id="vPuzzle"></div>
+    <div class="banner" id="vBanner"></div>
+    <div class="panel hidden" id="vResultsBox">
+      <ul class="results" id="vResults"></ul>
+    </div>
+  </section>
+
+  <!-- Proctor: setup -->
+  <section id="setup" class="hidden">
+    <div class="panel center">
+      <div class="muted">Room code</div>
+      <div class="code" id="roomCode">····</div>
+      <p class="muted" id="viewerCount">Waiting for a viewer…</p>
+      <div id="qr"></div>
+      <p class="muted" style="font-size:14px">Scan, or open <a id="joinLink" href="#"></a></p>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="row">
+        <div>
+          <label for="optTime">Round length</label>
+          <select id="optTime">
+            <option value="60">1 minute</option>
+            <option value="90">1½ minutes</option>
+            <option value="120" selected>2 minutes</option>
+            <option value="180">3 minutes</option>
+            <option value="300">5 minutes</option>
+          </select>
+        </div>
+        <div>
+          <label for="optTeams">Teams (comma separated)</label>
+          <input id="optTeams" value="Team A, Team B">
+        </div>
+      </div>
+      <p class="muted" id="deckInfo" style="font-size:14px"></p>
+      <div class="row">
+        <button class="primary" id="btnStart">Start round</button>
+        <button id="btnReshuffle" style="flex:0 0 auto">Reshuffle deck</button>
+        <button id="btnResetScores" style="flex:0 0 auto">Reset scores</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Proctor: playing -->
+  <section id="play" class="hidden">
+    <div class="scorebar" id="pScores"></div>
+    <div class="clock" id="pClock">2:00</div>
+    <div class="panel">
+      <div class="puzzle" id="pPuzzle" style="font-size:clamp(26px,6vw,48px);padding:8px"></div>
+      <div class="answer-label">Answer</div>
+      <div class="answer" id="pAnswer"></div>
+    </div>
+    <div class="actions">
+      <button class="bad" id="btnSkip">Skip</button>
+      <button class="good" id="btnGot">Got It</button>
+    </div>
+    <div class="row">
+      <button id="btnPause">Pause</button>
+      <button id="btnEnd">End round</button>
+    </div>
+  </section>
+
+  <!-- Proctor: round over -->
+  <section id="over" class="hidden">
+    <div class="scorebar" id="oScores"></div>
+    <div class="banner" id="oBanner"></div>
+    <div class="panel"><ul class="results" id="oResults"></ul></div>
+    <button class="primary" id="btnNext">Next round</button>
+  </section>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const PREFIX = 'madgab-lp94087-';          // namespaces our room ids on the public PeerJS server
+  const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const $ = id => document.getElementById(id);
+  const sections = ['home', 'join', 'viewer', 'setup', 'play', 'over'];
+  const show = name => sections.forEach(s => $(s).classList.toggle('hidden', s !== name));
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  };
+  const fmt = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const setStatus = (text, on) => { $('status').innerHTML = `<span class="dot ${on ? 'on' : ''}"></span>${esc(text)}`; };
+
+  // Keep the screen awake during a game.
+  let wakeLock = null;
+  async function keepAwake() {
+    try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => wakeLock = null); } } catch {}
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && role) keepAwake(); });
+
+  // Short beeps for the last seconds and the buzzer.
+  let audio = null;
+  function beep(freq = 880, dur = 0.12, vol = 0.2) {
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.frequency.value = freq; g.gain.value = vol;
+      o.connect(g); g.connect(audio.destination);
+      o.start(); o.stop(audio.currentTime + dur);
+    } catch {}
+  }
+
+  function renderScores(el, teams, current) {
+    el.innerHTML = teams.map((t, i) =>
+      `<div class="team ${i === current ? 'current' : ''}">${esc(t.name)}<b>${t.score}</b></div>`).join('');
+  }
+  function renderResults(el, results) {
+    el.innerHTML = results.length ? results.map(r =>
+      `<li class="${r.got ? 'got' : 'skip'}"><span class="mark">${r.got ? '✓' : '✗'}</span>
+       <span><div>${esc(r.answer)}</div><div class="p">${esc(r.puzzle)}</div></span></li>`).join('')
+      : '<li class="muted">No cards this round.</li>';
+  }
+
+  let role = null;
+
+  // ───────────────────────── PROCTOR ─────────────────────────
+  const P = {
+    peer: null, conns: [], deck: [], cards: [],
+    teams: [], current: 0, roundMs: 120000,
+    phase: 'setup', endsAt: 0, pausedLeft: 0, card: null, results: [], tick: null, lastBeep: -1,
+  };
+
+  async function startProctor() {
+    role = 'proctor'; show('setup'); keepAwake();
+    $('optTime').value = String(store.get('mg.time', 120));
+    $('optTeams').value = store.get('mg.teamsText', 'Team A, Team B');
+    P.teams = store.get('mg.teams', null) || parseTeams();
+    P.current = store.get('mg.current', 0) % P.teams.length;
+    renderAllScores();
+    try {
+      const text = await (await fetch('flashcards.txt', { cache: 'no-cache' })).text();
+      const seen = new Set();
+      for (const line of text.split(/\r?\n/)) {
+        const i = line.indexOf(',');
+        if (i < 1) continue;
+        const puzzle = line.slice(0, i).trim(), answer = line.slice(i + 1).trim();
+        if (!puzzle || !answer || seen.has(puzzle.toLowerCase())) continue;
+        seen.add(puzzle.toLowerCase());
+        P.cards.push({ puzzle, answer });
+      }
+    } catch (e) {
+      $('deckInfo').textContent = 'Could not load flashcards.txt — open this page from a web server, not as a local file.';
+      return;
+    }
+    loadDeck();
+    openRoom(sessionStorage.getItem('mg.code') || newCode());
+  }
+
+  function newCode() { let c = ''; for (let i = 0; i < 4; i++) c += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]; return c; }
+
+  function openRoom(code) {
+    setStatus('Opening room…', false);
+    const peer = new Peer(PREFIX + code);
+    P.peer = peer;
+    peer.on('open', () => {
+      sessionStorage.setItem('mg.code', code);
+      $('roomCode').textContent = code;
+      const url = location.origin + location.pathname + '?join=' + code;
+      $('joinLink').textContent = url.replace(/^https?:\/\//, ''); $('joinLink').href = url;
+      $('qr').innerHTML = '';
+      if (window.QRCode) new QRCode($('qr'), { text: url, width: 160, height: 160 });
+      setStatus('Room ' + code, true);
+    });
+    peer.on('connection', conn => {
+      conn.on('open', () => { P.conns.push(conn); updateViewerCount(); send(conn); });
+      conn.on('close', () => { P.conns = P.conns.filter(c => c !== conn); updateViewerCount(); });
+      conn.on('error', () => {});
+    });
+    peer.on('disconnected', () => { setStatus('Reconnecting…', false); setTimeout(() => { if (!peer.destroyed) peer.reconnect(); }, 1500); });
+    peer.on('error', err => {
+      if (err.type === 'unavailable-id') { peer.destroy(); sessionStorage.removeItem('mg.code'); openRoom(newCode()); }
+      else if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error') setStatus('Network trouble — retrying', false);
+    });
+  }
+
+  function updateViewerCount() {
+    const n = P.conns.length;
+    $('viewerCount').textContent = n ? `${n} viewer${n > 1 ? 's' : ''} connected ✓` : 'Waiting for a viewer…';
+  }
+
+  function parseTeams() {
+    const names = $('optTeams').value.split(',').map(s => s.trim()).filter(Boolean);
+    return (names.length ? names : ['Team A']).map(name => ({ name, score: 0 }));
+  }
+  function syncTeamsFromInput() {
+    const fresh = parseTeams();
+    const old = new Map(P.teams.map(t => [t.name, t.score]));
+    P.teams = fresh.map(t => ({ name: t.name, score: old.get(t.name) || 0 }));
+    if (P.current >= P.teams.length) P.current = 0;
+    store.set('mg.teamsText', $('optTeams').value);
+    saveScores();
+  }
+  function saveScores() { store.set('mg.teams', P.teams); store.set('mg.current', P.current); }
+  function renderAllScores() { ['pScores', 'oScores'].forEach(id => renderScores($(id), P.teams, P.current)); }
+
+  // Deck: a shuffled order of card indexes, persisted so cards don't repeat across sessions.
+  function loadDeck() {
+    const saved = store.get('mg.deck', null);
+    if (saved && saved.n === P.cards.length && Array.isArray(saved.order)) P.deck = saved.order;
+    else reshuffle();
+    updateDeckInfo();
+  }
+  function reshuffle() {
+    const a = P.cards.map((_, i) => i);
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    P.deck = a; saveDeck(); updateDeckInfo();
+  }
+  function saveDeck() { store.set('mg.deck', { n: P.cards.length, order: P.deck }); }
+  function updateDeckInfo() { $('deckInfo').textContent = `${P.deck.length} of ${P.cards.length} cards left in the deck.`; }
+  function drawCard() {
+    if (!P.deck.length) reshuffle();
+    const card = P.cards[P.deck.shift()]; saveDeck(); return card;
+  }
+
+  // What the viewers see. Answers only go out once the round is over.
+  function viewState() {
+    const s = { phase: P.phase, teams: P.teams, current: P.current };
+    if (P.phase === 'playing') { s.puzzle = P.card.puzzle; s.left = P.endsAt - Date.now(); }
+    if (P.phase === 'paused') { s.puzzle = null; s.left = P.pausedLeft; }
+    if (P.phase === 'over') s.results = P.results;
+    if (P.phase === 'setup') s.left = P.roundMs;
+    return s;
+  }
+  function send(conn) {
+    const s = viewState();
+    (conn ? [conn] : P.conns).forEach(c => { try { c.open && c.send(s); } catch {} });
+  }
+
+  function startRound() {
+    syncTeamsFromInput();
+    P.roundMs = Number($('optTime').value) * 1000;
+    store.set('mg.time', P.roundMs / 1000);
+    P.results = []; P.card = drawCard(); P.phase = 'playing';
+    P.endsAt = Date.now() + P.roundMs; P.lastBeep = -1;
+    $('btnPause').textContent = 'Pause';
+    show('play'); renderAllScores(); renderCard(); keepAwake(); beep(660, .15);
+    clearInterval(P.tick); P.tick = setInterval(onTick, 250);
+    send();
+  }
+  function renderCard() { $('pPuzzle').textContent = P.card.puzzle; $('pAnswer').textContent = P.card.answer; }
+
+  let lastSent = 0;
+  function onTick() {
+    if (P.phase !== 'playing') return;
+    const left = P.endsAt - Date.now();
+    $('pClock').textContent = fmt(left);
+    $('pClock').classList.toggle('low', left <= 10000);
+    const sec = Math.ceil(left / 1000);
+    if (sec <= 5 && sec > 0 && sec !== P.lastBeep) { P.lastBeep = sec; beep(880, .08, .12); }
+    if (left <= 0) return endRound();
+    if (Date.now() - lastSent > 1000) { lastSent = Date.now(); send(); }
+  }
+
+  function answer(got) {
+    if (P.phase !== 'playing') return;
+    P.results.push({ ...P.card, got });
+    if (got) { P.teams[P.current].score++; saveScores(); renderAllScores(); beep(1046, .1); }
+    P.card = drawCard(); renderCard(); updateDeckInfo(); send();
+  }
+
+  function togglePause() {
+    if (P.phase === 'playing') {
+      P.pausedLeft = P.endsAt - Date.now(); P.phase = 'paused';
+      $('btnPause').textContent = 'Resume'; $('pAnswer').style.visibility = 'hidden';
+    } else if (P.phase === 'paused') {
+      P.endsAt = Date.now() + P.pausedLeft; P.phase = 'playing';
+      $('btnPause').textContent = 'Pause'; $('pAnswer').style.visibility = '';
+    }
+    send();
+  }
+
+  function endRound() {
+    clearInterval(P.tick);
+    if (P.card) { P.deck.unshift(P.cards.indexOf(P.card)); saveDeck(); }   // the unanswered card goes back on top
+    P.card = null; P.phase = 'over';
+    $('pAnswer').style.visibility = '';
+    beep(220, .6, .3);
+    const got = P.results.filter(r => r.got).length;
+    $('oBanner').textContent = `${P.teams[P.current].name}: ${got} point${got === 1 ? '' : 's'} this round`;
+    renderAllScores(); renderResults($('oResults'), P.results);
+    show('over'); send();
+  }
+
+  function nextRound() {
+    P.current = (P.current + 1) % P.teams.length; saveScores();
+    P.phase = 'setup'; updateDeckInfo(); renderAllScores(); show('setup'); send();
+  }
+
+  $('btnProctor').onclick = startProctor;
+  $('btnStart').onclick = startRound;
+  $('btnGot').onclick = () => answer(true);
+  $('btnSkip').onclick = () => answer(false);
+  $('btnPause').onclick = togglePause;
+  $('btnEnd').onclick = () => { if (confirm('End this round now?')) endRound(); };
+  $('btnNext').onclick = nextRound;
+  $('btnReshuffle').onclick = () => { if (confirm('Reshuffle all cards back into the deck?')) reshuffle(); };
+  $('btnResetScores').onclick = () => { if (confirm('Set every team back to 0?')) { syncTeamsFromInput(); P.teams.forEach(t => t.score = 0); P.current = 0; saveScores(); send(); } };
+  $('optTeams').onchange = () => { syncTeamsFromInput(); send(); };
+
+  // ───────────────────────── VIEWER ─────────────────────────
+  const V = { peer: null, conn: null, code: '', state: null, gotAt: 0, tick: null, retry: null };
+
+  function startViewer(code) {
+    role = 'viewer'; keepAwake();
+    if (code) return join(code);
+    show('join'); $('joinCode').focus();
+  }
+
+  function join(code) {
+    code = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (code.length !== 4) { $('joinMsg').textContent = 'The code is 4 letters.'; return; }
+    V.code = code; show('join'); $('joinCode').value = code;
+    $('joinMsg').textContent = 'Connecting…'; setStatus('Connecting…', false);
+    if (!V.peer || V.peer.destroyed) {
+      V.peer = new Peer();
+      V.peer.on('open', connect);
+      V.peer.on('error', err => {
+        if (err.type === 'peer-unavailable') { $('joinMsg').textContent = `No room ${V.code} — check the code on the proctor's screen.`; setStatus('Not connected', false); scheduleRetry(); }
+        else scheduleRetry();
+      });
+      V.peer.on('disconnected', () => setTimeout(() => { if (!V.peer.destroyed) V.peer.reconnect(); }, 1500));
+    } else connect();
+  }
+
+  function connect() {
+    if (V.conn) try { V.conn.close(); } catch {}
+    const conn = V.peer.connect(PREFIX + V.code, { reliable: true });
+    V.conn = conn;
+    conn.on('open', () => {
+      clearTimeout(V.retry);
+      history.replaceState(null, '', '?join=' + V.code);
+      setStatus('Room ' + V.code, true); show('viewer');
+    });
+    conn.on('data', s => { V.state = s; V.gotAt = Date.now(); renderViewer(); });
+    conn.on('close', () => { if (V.conn === conn) { setStatus('Lost the proctor — reconnecting…', false); scheduleRetry(); } });
+  }
+  function scheduleRetry() { clearTimeout(V.retry); V.retry = setTimeout(() => { if (V.peer && V.peer.open) connect(); else if (V.peer) V.peer.reconnect(); }, 3000); }
+
+  function renderViewer() {
+    const s = V.state; if (!s) return;
+    renderScores($('vScores'), s.teams, s.current);
+    const team = s.teams[s.current] ? s.teams[s.current].name : '';
+    $('vResultsBox').classList.toggle('hidden', s.phase !== 'over');
+    $('vClock').classList.toggle('hidden', s.phase === 'over');
+    if (s.phase === 'playing') {
+      $('vPuzzle').textContent = s.puzzle; $('vBanner').textContent = '';
+    } else if (s.phase === 'paused') {
+      $('vPuzzle').textContent = ''; $('vBanner').textContent = 'Paused';
+    } else if (s.phase === 'over') {
+      const got = s.results.filter(r => r.got).length;
+      $('vPuzzle').textContent = ''; $('vBanner').textContent = `Time! ${team} got ${got}`;
+      renderResults($('vResults'), s.results);
+    } else {
+      $('vPuzzle').textContent = ''; $('vBanner').textContent = `${team}, get ready…`;
+    }
+    viewerClock();
+  }
+  function viewerClock() {
+    const s = V.state; if (!s) return;
+    let left = s.left || 0;
+    if (s.phase === 'playing') left -= Date.now() - V.gotAt;
+    $('vClock').textContent = fmt(left);
+    $('vClock').classList.toggle('low', s.phase === 'playing' && left <= 10000);
+  }
+  V.tick = setInterval(viewerClock, 250);
+
+  $('btnViewer').onclick = () => startViewer('');
+  $('btnJoin').onclick = () => join($('joinCode').value);
+  $('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') join($('joinCode').value); });
+
+  // ───────────────────────── START ─────────────────────────
+  const joinParam = new URLSearchParams(location.search).get('join');
+  if (joinParam) startViewer(joinParam);
+  else if (sessionStorage.getItem('mg.code')) startProctor();   // a proctor reloading keeps its room
+  else show('home');
+})();
+</script>
+</body>
+</html>
