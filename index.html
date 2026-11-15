@@ -192,11 +192,17 @@
         </div>
       </div>
       <p class="muted" id="deckInfo" style="font-size:14px"></p>
-      <div class="row">
-        <button class="primary" id="btnStart">Start round</button>
-        <button id="btnReshuffle" style="flex:0 0 auto">Reshuffle deck</button>
-        <button id="btnResetScores" style="flex:0 0 auto">Reset scores</button>
-      </div>
+      <button class="primary" id="btnStart" style="width:100%">Start game</button>
+    </div>
+  </section>
+
+  <!-- Proctor: between rounds — just whose turn it is and a start button -->
+  <section id="ready" class="hidden viewer-stage">
+    <div class="scorebar" id="rScores"></div>
+    <div class="banner" id="rBanner"></div>
+    <p class="muted center" id="rInfo" style="margin:0"></p>
+    <div class="row" style="justify-content:center">
+      <button class="primary" id="btnStartNext" style="flex:0 1 360px;padding:22px;font-size:22px">Start round</button>
     </div>
   </section>
 
@@ -256,7 +262,7 @@ const db = getDatabase(initializeApp({
   })();
   const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   const $ = id => document.getElementById(id);
-  const sections = ['home', 'demo', 'join', 'viewer', 'setup', 'play', 'over'];
+  const sections = ['home', 'demo', 'join', 'viewer', 'setup', 'ready', 'play', 'over'];
   const show = name => sections.forEach(s => $(s).classList.toggle('hidden', s !== name));
   const store = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -382,7 +388,7 @@ const db = getDatabase(initializeApp({
     saveScores();
   }
   function saveScores() { store.set('mg.teams', P.teams); store.set('mg.current', P.current); }
-  function renderAllScores() { ['pScores', 'oScores'].forEach(id => renderScores($(id), P.teams, P.current)); }
+  function renderAllScores() { ['pScores', 'oScores', 'rScores'].forEach(id => renderScores($(id), P.teams, P.current)); }
 
   // Deck: a shuffled order of card indexes, persisted so cards don't repeat across sessions.
   function loadDeck() {
@@ -404,6 +410,7 @@ const db = getDatabase(initializeApp({
     const left = P.deck.filter(fits).length, total = P.cards.filter((_, i) => fits(i)).length;
     const name = { easy: 'easy', hard: 'hard', all: '' }[level()];
     $('deckInfo').textContent = `${left} of ${total} ${name ? name + ' ' : ''}cards left in the deck.`;
+    $('rInfo').textContent = `${fmt(Number($('optTime').value) * 1000)} round · ${$('optLevel').selectedOptions[0].textContent} cards · ${left} left`;
   }
   function drawCard() {
     let at = P.deck.findIndex(fits);
@@ -436,6 +443,7 @@ const db = getDatabase(initializeApp({
     store.set('mg.time', P.roundMs / 1000);
     P.results = []; P.card = drawCard(); P.phase = 'playing';
     P.endsAt = Date.now() + P.roundMs; P.lastBeep = -1;
+    $('pClock').textContent = fmt(P.roundMs); $('pClock').classList.remove('low');
     $('btnPause').textContent = 'Pause';
     show('play'); renderAllScores(); renderCard(); keepAwake(); beep(660, .15);
     clearInterval(P.tick); P.tick = setInterval(onTick, 250);
@@ -485,7 +493,9 @@ const db = getDatabase(initializeApp({
 
   function nextRound() {
     P.current = (P.current + 1) % P.teams.length; saveScores();
-    P.phase = 'setup'; updateDeckInfo(); renderAllScores(); show('setup'); send();
+    P.phase = 'setup'; updateDeckInfo(); renderAllScores();
+    $('rBanner').textContent = `${P.teams[P.current].name}, you're up`;
+    show('ready'); send();
   }
 
   $('btnProctor').onclick = startProctor;
@@ -513,8 +523,7 @@ const db = getDatabase(initializeApp({
     try { sessionStorage.removeItem('mg.code'); } catch {}
     location.href = location.pathname;
   }
-  $('btnReshuffle').onclick = () => { if (confirm('Reshuffle all cards back into the deck?')) reshuffle(); };
-  $('btnResetScores').onclick = () => { if (confirm('Set every team back to 0?')) { syncTeamsFromInput(); P.teams.forEach(t => t.score = 0); P.current = 0; saveScores(); send(); } };
+  $('btnStartNext').onclick = startRound;
   $('optTeams').onchange = () => { syncTeamsFromInput(); send(); };
   $('optLevel').onchange = () => { store.set('mg.level', level()); updateDeckInfo(); };
 
@@ -607,7 +616,7 @@ const db = getDatabase(initializeApp({
   $('btnDemoDone').onclick = () => show('home');
 
   // ───────────────────────── ABOUT ─────────────────────────
-  const VERSION = '1.3', RELEASED = '2026-11-14';
+  const VERSION = '1.4', RELEASED = '2026-11-14';
   async function showAbout() {
     $('aboutVersion').textContent = `Version ${VERSION} · ${RELEASED}`;
     $('about').classList.remove('hidden'); $('btnAboutClose').focus();
