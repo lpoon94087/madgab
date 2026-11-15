@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mad Gab</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root {
@@ -178,10 +177,32 @@
   </section>
 </main>
 
-<script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+import { getDatabase, ref, set, onValue, onDisconnect, runTransaction } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js';
+
+// Both devices sync through Firebase Realtime Database: rooms/<CODE>/{owner,state,viewers}.
+const db = getDatabase(initializeApp({
+  apiKey: 'AIzaSyDbzdtJUIyNIsZ1CnxArgwa8G7mfqb1sKQ',
+  authDomain: 'madgab-b4a1e.firebaseapp.com',
+  databaseURL: 'https://madgab-b4a1e-default-rtdb.firebaseio.com',
+  projectId: 'madgab-b4a1e',
+  appId: '1:168797707932:web:4cff56d10c1d38319bd759',
+}));
+
 (() => {
   'use strict';
-  const PREFIX = 'madgab-lp94087-';          // namespaces our room ids on the public PeerJS server
+  // Server clock offset, so the viewer's countdown matches the proctor's even if device clocks differ.
+  let offset = 0;
+  onValue(ref(db, '.info/serverTimeOffset'), s => { offset = s.val() || 0; });
+  const now = () => Date.now() + offset;
+  // A per-tab id: the proctor's claim on its room code, or a viewer's presence entry.
+  const ME = (() => {
+    let id = null;
+    try { id = sessionStorage.getItem('mg.me'); } catch {}
+    if (!id) { id = Math.random().toString(36).slice(2, 12); try { sessionStorage.setItem('mg.me', id); } catch {} }
+    return id;
+  })();
   const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   const $ = id => document.getElementById(id);
   const sections = ['home', 'join', 'viewer', 'setup', 'play', 'over'];
@@ -228,7 +249,7 @@
 
   // ───────────────────────── PROCTOR ─────────────────────────
   const P = {
-    peer: null, conns: [], deck: [], cards: [],
+    room: null, viewers: 0, deck: [], cards: [],
     teams: [], current: 0, roundMs: 120000,
     phase: 'setup', endsAt: 0, pausedLeft: 0, card: null, results: [], tick: null, lastBeep: -1,
   };
@@ -256,39 +277,41 @@
       return;
     }
     loadDeck();
-    openRoom(sessionStorage.getItem('mg.code') || newCode());
+    let saved = null; try { saved = sessionStorage.getItem('mg.code'); } catch {}
+    openRoom(saved || newCode());
   }
 
   function newCode() { let c = ''; for (let i = 0; i < 4; i++) c += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]; return c; }
 
-  function openRoom(code) {
+  async function openRoom(code) {
     setStatus('Opening room…', false);
-    const peer = new Peer(PREFIX + code);
-    P.peer = peer;
-    peer.on('open', () => {
-      sessionStorage.setItem('mg.code', code);
-      $('roomCode').textContent = code;
-      const url = location.origin + location.pathname + '?join=' + code;
-      $('joinLink').textContent = url.replace(/^https?:\/\//, ''); $('joinLink').href = url;
-      $('qr').innerHTML = '';
-      if (window.QRCode) new QRCode($('qr'), { text: url, width: 160, height: 160 });
-      setStatus('Room ' + code, true);
-    });
-    peer.on('connection', conn => {
-      if (!P.conns.length) $('viewerCount').textContent = 'A viewer is connecting…';
-      conn.on('open', () => { P.conns.push(conn); updateViewerCount(); send(conn); });
-      conn.on('close', () => { P.conns = P.conns.filter(c => c !== conn); updateViewerCount(); });
-      conn.on('error', () => {});
-    });
-    peer.on('disconnected', () => { setStatus('Reconnecting…', false); setTimeout(() => { if (!peer.destroyed) peer.reconnect(); }, 1500); });
-    peer.on('error', err => {
-      if (err.type === 'unavailable-id') { peer.destroy(); sessionStorage.removeItem('mg.code'); openRoom(newCode()); }
-      else if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error') setStatus('Network trouble — retrying', false);
-    });
+    let res;
+    try {
+      // Claim the code unless another proctor is using it (claims go stale after 12 hours).
+      res = await runTransaction(ref(db, `rooms/${code}/owner`), cur => {
+        if (!cur || cur.id === ME || now() - cur.at > 12 * 3600e3) return { id: ME, at: now() };
+        return undefined;
+      });
+    } catch (e) {
+      setStatus('Sync error', false);
+      $('viewerCount').textContent = 'Could not reach the game database: ' + (e.message || e);
+      return;
+    }
+    if (!res.committed) return openRoom(newCode());
+    P.room = code;
+    try { sessionStorage.setItem('mg.code', code); } catch {}
+    $('roomCode').textContent = code;
+    const url = location.origin + location.pathname + '?join=' + code;
+    $('joinLink').textContent = url.replace(/^https?:\/\//, ''); $('joinLink').href = url;
+    $('qr').innerHTML = '';
+    if (window.QRCode) new QRCode($('qr'), { text: url, width: 160, height: 160 });
+    onValue(ref(db, `rooms/${code}/viewers`), snap => { P.viewers = snap.size; updateViewerCount(); });
+    onValue(ref(db, '.info/connected'), c => setStatus(c.val() ? 'Room ' + code : 'Reconnecting…', !!c.val()));
+    send();
   }
 
   function updateViewerCount() {
-    const n = P.conns.length;
+    const n = P.viewers;
     $('viewerCount').textContent = n ? `${n} viewer${n > 1 ? 's' : ''} connected ✓` : 'Waiting for a viewer…';
   }
 
@@ -329,15 +352,16 @@
   // What the viewers see. Answers only go out once the round is over.
   function viewState() {
     const s = { phase: P.phase, teams: P.teams, current: P.current };
-    if (P.phase === 'playing') { s.puzzle = P.card.puzzle; s.left = P.endsAt - Date.now(); }
+    if (P.phase === 'playing') { s.puzzle = P.card.puzzle; s.endsAt = P.endsAt + offset; }
     if (P.phase === 'paused') { s.puzzle = null; s.left = P.pausedLeft; }
     if (P.phase === 'over') s.results = P.results;
     if (P.phase === 'setup') s.left = P.roundMs;
     return s;
   }
-  function send(conn) {
-    const s = viewState();
-    (conn ? [conn] : P.conns).forEach(c => { try { c.open && c.send(s); } catch {} });
+  function send() {
+    if (!P.room) return;
+    set(ref(db, `rooms/${P.room}/state`), viewState())
+      .catch(e => setStatus('Sync error: ' + (e.code || e.message), false));
   }
 
   function startRound() {
@@ -353,7 +377,6 @@
   }
   function renderCard() { $('pPuzzle').textContent = P.card.puzzle; $('pAnswer').textContent = P.card.answer; }
 
-  let lastSent = 0;
   function onTick() {
     if (P.phase !== 'playing') return;
     const left = P.endsAt - Date.now();
@@ -362,7 +385,6 @@
     const sec = Math.ceil(left / 1000);
     if (sec <= 5 && sec > 0 && sec !== P.lastBeep) { P.lastBeep = sec; beep(880, .08, .12); }
     if (left <= 0) return endRound();
-    if (Date.now() - lastSent > 1000) { lastSent = Date.now(); send(); }
   }
 
   function answer(got) {
@@ -412,7 +434,7 @@
   $('optTeams').onchange = () => { syncTeamsFromInput(); send(); };
 
   // ───────────────────────── VIEWER ─────────────────────────
-  const V = { peer: null, conn: null, code: '', state: null, gotAt: 0, tick: null, retry: null };
+  const V = { code: '', state: null, unsubs: [] };
 
   function startViewer(code) {
     role = 'viewer'; keepAwake();
@@ -424,47 +446,28 @@
     code = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (code.length !== 4) { $('joinMsg').textContent = 'The code is 4 letters.'; return; }
     V.code = code; show('join'); $('joinCode').value = code;
-    $('joinMsg').textContent = 'Contacting the sync server…'; setStatus('Connecting…', false);
-    if (!V.peer || V.peer.destroyed) {
-      V.peer = new Peer();
-      V.peer.on('open', connect);
-      V.peer.on('error', err => {
-        if (err.type === 'peer-unavailable') { $('joinMsg').textContent = `No room ${V.code} — check the code on the proctor's screen.`; setStatus('Not connected', false); scheduleRetry(); }
-        else { $('joinMsg').textContent = `Connection error: ${err.type || err.message}. Retrying…`; scheduleRetry(); }
-      });
-      V.peer.on('disconnected', () => setTimeout(() => { if (!V.peer.destroyed) V.peer.reconnect(); }, 1500));
-    } else connect();
+    $('joinMsg').textContent = 'Connecting…'; setStatus('Connecting…', false);
+    V.unsubs.forEach(u => u()); V.unsubs = [];
+    const me = ref(db, `rooms/${code}/viewers/${ME}`);
+    V.unsubs.push(onValue(ref(db, '.info/connected'), c => {
+      if (c.val()) { onDisconnect(me).remove(); set(me, true).catch(() => {}); }
+      setStatus(c.val() ? 'Room ' + code : 'Reconnecting…', !!c.val());
+    }));
+    V.unsubs.push(onValue(ref(db, `rooms/${code}/state`), snap => {
+      const s = snap.val();
+      if (!s) {
+        show('join');
+        $('joinMsg').textContent = `No game in room ${code} yet. Check the code on the proctor's screen — this page will join as soon as it's open.`;
+        return;
+      }
+      history.replaceState(null, '', '?join=' + code);
+      V.state = s; show('viewer'); renderViewer();
+    }, err => { $('joinMsg').textContent = 'Could not reach the game database: ' + err.message; }));
   }
-
-  function connect() {
-    if (V.conn) try { V.conn.close(); } catch {}
-    const conn = V.peer.connect(PREFIX + V.code, { reliable: true });
-    V.conn = conn;
-    // Show which step we're on, so a stuck connection says why.
-    const started = Date.now();
-    $('joinMsg').textContent = `Reached the sync server. Looking for room ${V.code}…`;
-    clearInterval(V.diag);
-    V.diag = setInterval(() => {
-      if (conn.open || V.conn !== conn) return clearInterval(V.diag);
-      const pc = conn.peerConnection;
-      const ice = pc ? pc.iceConnectionState : 'not started';
-      const secs = Math.round((Date.now() - started) / 1000);
-      $('joinMsg').textContent = secs < 15
-        ? `Linking the two devices… (${ice}, ${secs}s)`
-        : `Still can't link the two devices (${ice}, ${secs}s). A browser privacy setting, extension or VPN may be blocking WebRTC.`;
-    }, 500);
-    conn.on('open', () => {
-      clearTimeout(V.retry); clearInterval(V.diag);
-      history.replaceState(null, '', '?join=' + V.code);
-      setStatus('Room ' + V.code, true); show('viewer');
-    });
-    conn.on('data', s => { V.state = s; V.gotAt = Date.now(); renderViewer(); });
-    conn.on('close', () => { if (V.conn === conn) { setStatus('Lost the proctor — reconnecting…', false); scheduleRetry(); } });
-  }
-  function scheduleRetry() { clearTimeout(V.retry); V.retry = setTimeout(() => { if (V.peer && V.peer.open) connect(); else if (V.peer) V.peer.reconnect(); }, 3000); }
 
   function renderViewer() {
     const s = V.state; if (!s) return;
+    s.teams = s.teams || []; s.results = s.results || [];
     renderScores($('vScores'), s.teams, s.current);
     const team = s.teams[s.current] ? s.teams[s.current].name : '';
     $('vResultsBox').classList.toggle('hidden', s.phase !== 'over');
@@ -484,8 +487,7 @@
   }
   function viewerClock() {
     const s = V.state; if (!s) return;
-    let left = s.left || 0;
-    if (s.phase === 'playing') left -= Date.now() - V.gotAt;
+    const left = s.phase === 'playing' ? s.endsAt - now() : (s.left || 0);
     $('vClock').textContent = fmt(left);
     $('vClock').classList.toggle('low', s.phase === 'playing' && left <= 10000);
   }

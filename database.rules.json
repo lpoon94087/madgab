@@ -1,0 +1,27 @@
+{
+  "rules": {
+    "rooms": {
+      "$code": {
+        ".validate": "$code.matches(/^[A-Z2-9]{4}$/)",
+        "owner": {
+          ".read": true,
+          ".write": true,
+          ".validate": "newData.hasChildren(['id', 'at']) && newData.child('id').isString() && newData.child('id').val().length <= 16 && newData.child('at').isNumber()"
+        },
+        "state": {
+          ".read": true,
+          ".write": true,
+          ".validate": "newData.hasChild('phase') && newData.child('phase').isString()"
+        },
+        "viewers": {
+          ".read": true,
+          "$viewer": {
+            ".write": true,
+            ".validate": "$viewer.matches(/^[a-z0-9]{1,16}$/) && newData.isBoolean()"
+          }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
