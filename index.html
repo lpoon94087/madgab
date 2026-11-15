@@ -136,6 +136,14 @@
           </select>
         </div>
         <div>
+          <label for="optLevel">Cards</label>
+          <select id="optLevel">
+            <option value="easy">Easy</option>
+            <option value="hard">Hard</option>
+            <option value="all" selected>Easy + Hard</option>
+          </select>
+        </div>
+        <div>
           <label for="optTeams">Teams (comma separated)</label>
           <input id="optTeams" value="Team A, Team B">
         </div>
@@ -258,11 +266,14 @@ const db = getDatabase(initializeApp({
     role = 'proctor'; show('setup'); keepAwake();
     $('optTime').value = String(store.get('mg.time', 120));
     $('optTeams').value = store.get('mg.teamsText', 'Team A, Team B');
+    $('optLevel').value = store.get('mg.level', 'all');
     P.teams = store.get('mg.teams', null) || parseTeams();
     P.current = store.get('mg.current', 0) % P.teams.length;
     renderAllScores();
     try {
-      const text = await (await fetch('flashcards.txt', { cache: 'no-cache' })).text();
+      const [text, hardText] = await Promise.all(['flashcards.txt', 'hard.txt'].map(f =>
+        fetch(f, { cache: 'no-cache' }).then(r => r.ok ? r.text() : '')));
+      const hard = new Set(hardText.split(/\r?\n/).map(s => s.trim().toLowerCase()).filter(Boolean));
       const seen = new Set();
       for (const line of text.split(/\r?\n/)) {
         const i = line.indexOf(',');
@@ -270,7 +281,7 @@ const db = getDatabase(initializeApp({
         const puzzle = line.slice(0, i).trim(), answer = line.slice(i + 1).trim();
         if (!puzzle || !answer || seen.has(puzzle.toLowerCase())) continue;
         seen.add(puzzle.toLowerCase());
-        P.cards.push({ puzzle, answer });
+        P.cards.push({ puzzle, answer, hard: hard.has(puzzle.toLowerCase()) });
       }
     } catch (e) {
       $('deckInfo').textContent = 'Could not load flashcards.txt — open this page from a web server, not as a local file.';
@@ -343,10 +354,22 @@ const db = getDatabase(initializeApp({
     P.deck = a; saveDeck(); updateDeckInfo();
   }
   function saveDeck() { store.set('mg.deck', { n: P.cards.length, order: P.deck }); }
-  function updateDeckInfo() { $('deckInfo').textContent = `${P.deck.length} of ${P.cards.length} cards left in the deck.`; }
+  // The deck holds every card; the level setting picks which ones get drawn.
+  const level = () => $('optLevel').value;
+  const fits = i => level() === 'all' || (level() === 'hard') === P.cards[i].hard;
+  function updateDeckInfo() {
+    const left = P.deck.filter(fits).length, total = P.cards.filter((_, i) => fits(i)).length;
+    const name = { easy: 'easy', hard: 'hard', all: '' }[level()];
+    $('deckInfo').textContent = `${left} of ${total} ${name ? name + ' ' : ''}cards left in the deck.`;
+  }
   function drawCard() {
-    if (!P.deck.length) reshuffle();
-    const card = P.cards[P.deck.shift()]; saveDeck(); return card;
+    let at = P.deck.findIndex(fits);
+    if (at < 0) {   // this level is used up: put its cards back, shuffled, without touching the others
+      const back = P.cards.map((_, i) => i).filter(fits);
+      for (let i = back.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [back[i], back[j]] = [back[j], back[i]]; }
+      P.deck = P.deck.concat(back); at = P.deck.findIndex(fits);
+    }
+    const card = P.cards[P.deck.splice(at, 1)[0]]; saveDeck(); return card;
   }
 
   // What the viewers see. Answers only go out once the round is over.
@@ -432,6 +455,7 @@ const db = getDatabase(initializeApp({
   $('btnReshuffle').onclick = () => { if (confirm('Reshuffle all cards back into the deck?')) reshuffle(); };
   $('btnResetScores').onclick = () => { if (confirm('Set every team back to 0?')) { syncTeamsFromInput(); P.teams.forEach(t => t.score = 0); P.current = 0; saveScores(); send(); } };
   $('optTeams').onchange = () => { syncTeamsFromInput(); send(); };
+  $('optLevel').onchange = () => { store.set('mg.level', level()); updateDeckInfo(); };
 
   // ───────────────────────── VIEWER ─────────────────────────
   const V = { code: '', state: null, unsubs: [] };
