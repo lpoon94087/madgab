@@ -31,6 +31,10 @@
   .menu button { background: none; text-align: left; padding: 12px 14px; font-weight: 500; border-radius: 8px; }
   .menu button:hover { background: var(--line); }
   .menu .danger { color: var(--bad); }
+  .overlay { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .overlay .panel { max-width: 420px; width: 100%; }
+  .overlay h2 { margin: 0 0 4px; font-size: 22px; }
+  .overlay h2 span { color: var(--accent); }
   header .status { margin-left: auto; font-size: 14px; color: var(--muted); }
   .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--bad); margin-right: 6px; vertical-align: middle; }
   .dot.on { background: var(--good); }
@@ -94,6 +98,17 @@
   <div id="menu" class="menu hidden" role="menu"></div>
   <div class="status" id="status"></div>
 </header>
+
+<div id="about" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="panel">
+    <h2 id="aboutTitle">Mad <span>Gab</span></h2>
+    <div class="muted" id="aboutVersion"></div>
+    <p id="aboutCards"></p>
+    <p class="muted" style="font-size:15px">Say the puzzle words out loud until they sound like a familiar phrase. One device is the proctor, another is the viewer; they stay in sync through Firebase.</p>
+    <p style="font-size:15px">Source: <a href="https://github.com/lpoon94087/madgab" target="_blank" rel="noopener">github.com/lpoon94087/madgab</a></p>
+    <button class="primary" id="btnAboutClose" style="width:100%">Close</button>
+  </div>
+</div>
 
 <main>
   <!-- Choose a role -->
@@ -592,9 +607,29 @@ const db = getDatabase(initializeApp({
   $('btnDemoAgain').onclick = () => { demoAt = 0; demoShown = false; demoRender(); };
   $('btnDemoDone').onclick = () => show('home');
 
+  // ───────────────────────── ABOUT ─────────────────────────
+  const VERSION = '1.3', RELEASED = '2026-11-14';
+  async function showAbout() {
+    $('aboutVersion').textContent = `Version ${VERSION} · ${RELEASED}`;
+    $('about').classList.remove('hidden'); $('btnAboutClose').focus();
+    try {
+      const [cards, hard] = await Promise.all(['flashcards.txt', 'hard.txt'].map(f => fetch(f).then(r => r.text())));
+      const n = new Set(cards.split(/\r?\n/).filter(l => l.indexOf(',') > 0).map(l => l.slice(0, l.indexOf(',')).trim().toLowerCase())).size;
+      const h = hard.split(/\r?\n/).filter(l => l.trim()).length;
+      $('aboutCards').textContent = `${n.toLocaleString()} cards: ${(n - h).toLocaleString()} easy, ${h.toLocaleString()} hard.`;
+    } catch { $('aboutCards').textContent = ''; }
+  }
+  const closeAbout = () => $('about').classList.add('hidden');
+  $('btnAboutClose').onclick = closeAbout;
+  $('about').addEventListener('click', e => { if (e.target === $('about')) closeAbout(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAbout(); });
+
   // ───────────────────────── MENU ─────────────────────────
   // Tapping "Mad Gab" opens a menu whose items depend on what this device is doing.
   function menuItems() {
+    return [...roleItems(), ['About', showAbout]];
+  }
+  function roleItems() {
     if (role === 'proctor') return [
       ['New game', newGame],
       ['Reshuffle deck', () => { if (confirm('Reshuffle all cards back into the deck?')) reshuffle(); }],
