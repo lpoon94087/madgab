@@ -198,7 +198,10 @@
     <div class="scorebar" id="oScores"></div>
     <div class="banner" id="oBanner"></div>
     <div class="panel"><ul class="results" id="oResults"></ul></div>
-    <button class="primary" id="btnNext">Next round</button>
+    <div class="row">
+      <button id="btnNewGame">New game</button>
+      <button class="primary" id="btnNext">Next round</button>
+    </div>
   </section>
 </main>
 
@@ -469,6 +472,12 @@ const db = getDatabase(initializeApp({
   $('btnPause').onclick = togglePause;
   $('btnEnd').onclick = () => { if (confirm('End this round now?')) endRound(); };
   $('btnNext').onclick = nextRound;
+  // New game: every score back to 0, first team up, back to setup. The deck carries on (Reshuffle is on setup).
+  $('btnNewGame').onclick = () => {
+    if (!confirm('Start a new game? Every team goes back to 0.')) return;
+    syncTeamsFromInput(); P.teams.forEach(t => t.score = 0); P.current = 0; saveScores();
+    P.phase = 'setup'; P.results = []; updateDeckInfo(); renderAllScores(); show('setup'); send();
+  };
   $('btnReshuffle').onclick = () => { if (confirm('Reshuffle all cards back into the deck?')) reshuffle(); };
   $('btnResetScores').onclick = () => { if (confirm('Set every team back to 0?')) { syncTeamsFromInput(); P.teams.forEach(t => t.score = 0); P.current = 0; saveScores(); send(); } };
   $('optTeams').onchange = () => { syncTeamsFromInput(); send(); };
