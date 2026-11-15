@@ -20,6 +20,17 @@
   header { padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); }
   header h1 { margin: 0; font-size: 20px; letter-spacing: .5px; }
   header h1 span { color: var(--accent); }
+  header { position: relative; }
+  .brand { background: none; padding: 4px 6px; margin: -4px -6px; font-size: 20px; font-weight: 700; letter-spacing: .5px; }
+  .brand small { font-size: 12px; color: var(--muted); }
+  .menu {
+    position: absolute; top: calc(100% - 4px); left: 10px; z-index: 10; min-width: 220px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45); display: flex; flex-direction: column;
+  }
+  .menu button { background: none; text-align: left; padding: 12px 14px; font-weight: 500; border-radius: 8px; }
+  .menu button:hover { background: var(--line); }
+  .menu .danger { color: var(--bad); }
   header .status { margin-left: auto; font-size: 14px; color: var(--muted); }
   .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--bad); margin-right: 6px; vertical-align: middle; }
   .dot.on { background: var(--good); }
@@ -79,7 +90,8 @@
 </head>
 <body>
 <header>
-  <h1>Mad <span>Gab</span></h1>
+  <h1><button id="btnMenu" class="brand" aria-haspopup="true" aria-expanded="false">Mad <span>Gab</span> <small>▾</small></button></h1>
+  <div id="menu" class="menu hidden" role="menu"></div>
   <div class="status" id="status"></div>
 </header>
 
@@ -198,10 +210,7 @@
     <div class="scorebar" id="oScores"></div>
     <div class="banner" id="oBanner"></div>
     <div class="panel"><ul class="results" id="oResults"></ul></div>
-    <div class="row">
-      <button id="btnNewGame">New game</button>
-      <button class="primary" id="btnNext">Next round</button>
-    </div>
+    <button class="primary" id="btnNext">Next round</button>
   </section>
 </main>
 
@@ -472,12 +481,24 @@ const db = getDatabase(initializeApp({
   $('btnPause').onclick = togglePause;
   $('btnEnd').onclick = () => { if (confirm('End this round now?')) endRound(); };
   $('btnNext').onclick = nextRound;
-  // New game: every score back to 0, first team up, back to setup. The deck carries on (Reshuffle is on setup).
-  $('btnNewGame').onclick = () => {
-    if (!confirm('Start a new game? Every team goes back to 0.')) return;
+  // New game: stop any round, every score back to 0, first team up, back to setup.
+  // The deck carries on; Reshuffle puts every card back.
+  function newGame() {
+    if (!confirm('Start a new game? Any round in progress stops, and every team goes back to 0.')) return;
+    clearInterval(P.tick);
+    if (P.card) { P.deck.unshift(P.cards.indexOf(P.card)); saveDeck(); P.card = null; }
+    $('pAnswer').style.visibility = '';
     syncTeamsFromInput(); P.teams.forEach(t => t.score = 0); P.current = 0; saveScores();
     P.phase = 'setup'; P.results = []; updateDeckInfo(); renderAllScores(); show('setup'); send();
-  };
+  }
+  async function leaveGame() {
+    if (!confirm('Leave this game? The viewer will see that it has ended.')) return;
+    clearInterval(P.tick);
+    if (P.card) { P.deck.unshift(P.cards.indexOf(P.card)); saveDeck(); }
+    if (P.room) { try { await set(ref(db, `rooms/${P.room}/state`), { phase: 'closed' }); } catch {} }
+    try { sessionStorage.removeItem('mg.code'); } catch {}
+    location.href = location.pathname;
+  }
   $('btnReshuffle').onclick = () => { if (confirm('Reshuffle all cards back into the deck?')) reshuffle(); };
   $('btnResetScores').onclick = () => { if (confirm('Set every team back to 0?')) { syncTeamsFromInput(); P.teams.forEach(t => t.score = 0); P.current = 0; saveScores(); send(); } };
   $('optTeams').onchange = () => { syncTeamsFromInput(); send(); };
@@ -521,11 +542,13 @@ const db = getDatabase(initializeApp({
     renderScores($('vScores'), s.teams, s.current);
     const team = s.teams[s.current] ? s.teams[s.current].name : '';
     $('vResultsBox').classList.toggle('hidden', s.phase !== 'over');
-    $('vClock').classList.toggle('hidden', s.phase === 'over');
+    $('vClock').classList.toggle('hidden', s.phase === 'over' || s.phase === 'closed');
     if (s.phase === 'playing') {
       $('vPuzzle').textContent = s.puzzle; $('vBanner').textContent = '';
     } else if (s.phase === 'paused') {
       $('vPuzzle').textContent = ''; $('vBanner').textContent = 'Paused';
+    } else if (s.phase === 'closed') {
+      $('vPuzzle').textContent = ''; $('vBanner').textContent = 'The proctor ended this game.';
     } else if (s.phase === 'over') {
       const got = s.results.filter(r => r.got).length;
       $('vPuzzle').textContent = ''; $('vBanner').textContent = `Time! ${team} got ${got}`;
@@ -568,6 +591,36 @@ const db = getDatabase(initializeApp({
   $('btnDemoNext').onclick = () => { if (!demoShown) demoShown = true; else { demoAt++; demoShown = false; } demoRender(); };
   $('btnDemoAgain').onclick = () => { demoAt = 0; demoShown = false; demoRender(); };
   $('btnDemoDone').onclick = () => show('home');
+
+  // ───────────────────────── MENU ─────────────────────────
+  // Tapping "Mad Gab" opens a menu whose items depend on what this device is doing.
+  function menuItems() {
+    if (role === 'proctor') return [
+      ['New game', newGame],
+      ['Reshuffle deck', () => { if (confirm('Reshuffle all cards back into the deck?')) reshuffle(); }],
+      ['Leave game', leaveGame, 'danger'],
+    ];
+    if (role === 'viewer') return [['Leave room', () => { location.href = location.pathname; }, 'danger']];
+    const items = [['How to play', () => $('btnDemo').click()]];
+    if ($('home').classList.contains('hidden')) items.push(['Start page', () => show('home')]);
+    return items;
+  }
+  function closeMenu() { $('menu').classList.add('hidden'); $('btnMenu').setAttribute('aria-expanded', 'false'); }
+  $('btnMenu').onclick = e => {
+    e.stopPropagation();
+    const m = $('menu');
+    if (!m.classList.contains('hidden')) return closeMenu();
+    m.innerHTML = '';
+    for (const [label, fn, cls] of menuItems()) {
+      const b = document.createElement('button');
+      b.textContent = label; b.setAttribute('role', 'menuitem'); if (cls) b.className = cls;
+      b.onclick = () => { closeMenu(); fn(); };
+      m.appendChild(b);
+    }
+    m.classList.remove('hidden'); $('btnMenu').setAttribute('aria-expanded', 'true');
+  };
+  document.addEventListener('click', e => { if (!$('menu').contains(e.target)) closeMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
 
   // ───────────────────────── START ─────────────────────────
   const joinParam = new URLSearchParams(location.search).get('join');
