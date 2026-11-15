@@ -7,10 +7,10 @@ Jog Clay Die Scream,Chocolate Ice Cream
 Law Duff There Inks,Lord of the Rings
 Moe's Art,Mozart
 My Kojak Sun,Michael Jackson
-Pie Rate Softy Care Hip Been,Pirates of the Carribean
+Pie Rate Softy Care Hip Been,Pirates of the Caribbean
 Sand Tack Laws,Santa Claus
 Thick awe loved hoot he,The call of duty
-Thick Hull Foam Heck Sicko,The Gulf of MeXico
+Thick Hull Foam Heck Sicko,The Gulf of Mexico
 Day Fed Peck Calm,David Beckham
 Hair Rose Myth,Aerosmith
 Caress Peak Reamed Hone Huts,Krispy Kreme Doughnuts
@@ -69,7 +69,7 @@ Jeweler Rob Hurts,Julia Roberts
 Minnie Soda Vie Kinks,Minnesota Vikings
 Seal Indy Yon,Celine Dion
 Thigh Sing Gone Thick Ache,The Icing On The Cake
-Why Emcee Hay,Ymca
+Why Emcee Hay,YMCA
 Theme Are Ink Ore,The Marine Corps
 Poise Tomb Hen,Boys II Men
 Mar Thus Do Hurt,Martha Stewart
@@ -84,7 +84,7 @@ Wide Hidden Chews Haze Hoe,Why Didn't You Say So?
 Tap Lloyd Noose Pay Purse,Tabloid Newspapers
 Fee Nicks Huns,Phoenix Suns
 Hit Stoop Add,It's Too Bad
-May Churl Eek Bays Paul,Majore League Baseball
+May Churl Eek Bays Paul,Major League Baseball
 Poe Little Key Ink Oar Wrecked,Politically Incorrect
 Sue Purse Eye Smee,Super Size Me
 Wall Come Island Mash Ooze,Walk A Mile In My Shoes
@@ -129,7 +129,7 @@ House The Why Funk Heads,How's The Wife And Kids?
 May Lord Herb Ride,Mail-Order Bride
 Own Late Aches Aim Men Hit,Only Takes A Minute
 Print Says Fee Owner,Princess Fiona
-Theme Hag Niftycents Heaven,The Magnificant Seven
+Theme Hag Niftycents Heaven,The Magnificent Seven
 Were That Sway Ten Cold,Worth Its Weight In Gold
 Ape He Street He,A Peace Treaty
 Fee Numb He Nun,Phenomenon
@@ -150,16 +150,16 @@ You Taj As,Utah Jazz
 Fum Geyser Bay Bees,Some Guys Are Babies
 Poke Hoe Haunt Is,Pocahontas
 Mass Turk Hard,MasterCard
-Huge He Nora Gun,Eugen, Oregon
+Huge He Nora Gun,Eugene, Oregon
 Eight Roost Oar He,A True Story
 Ache Inks High Sped,A King-Size Bed
 Dock Terse Oar Duhs,Doctor's Orders
-Ha Leap Air He,Halle Barry
+Ha Leap Air He,Halle Berry
 Wart Rope Mel Funk Shun,Wardrobe Malfunction
 Fan Ill Ass Guy,Vanilla Sky
 Oozer Fray Duff Deep Pig Pad Woof,Who's Afraid Of The Big Bad Wolf?
 Gnu Your Crance Jess,New York Rangers
-Hype Bleed Dinner Scen,I Plead Innocent
+Hype Bleed Dinner Sent,I Plead Innocent
 Mike Robe Rue Hurry,Microbrewery
 Rye Terse Gramp,Writer's Cramp
 Toe Runt Hoke Annie Duh,Toronto, Canada
@@ -177,9 +177,9 @@ Bed Chirp Autumn Doll Her,Bet Your Bottom Dollar
 Eggs Tour Men Hater,Exterminator
 Dawn Alt Rump,Donald Trump
 Furs Dumb End Mint,First Amendment
-Inter Tenement Who Knight,Entertainement Tonight
+Inter Tenement Who Knight,Entertainment Tonight
 Oar He Oak Hooky,Oreo Cookie
-Srobe Bury Sink Ream,Strawberries And Cream
+Strobe Bury Sink Ream,Strawberries And Cream
 Urine Mice Pays,You're In My Space
 We Eared Sigh Ants,Weird Science
 Swedes Hicks Dean,Sweet Sixteen
@@ -219,7 +219,7 @@ Juan Inner Meal Yawn,One In A Million
 Moo Verse San Jake Hearse,Movers And Shakers
 Polar Ab Duel,Paula Abdul
 Rubber Toe Benny Knee,Roberto Benigni
-Tocke Turd Duel Hit Hell,Dr. Dolittle
+Dock Turd Duel Hit Hell,Dr. Dolittle
 Sigh Goes Home Attic,Psychosomatic
 Owe Four Rent Dull Gent,Overindulgent
 Donut Hawk Twos Train Jazz,Do Not Talk To Strangers
@@ -227,7 +227,7 @@ Bick Ma Nun Cam Puss,Big Man On Campus
 Ache Hay Solve Cons Tip Asian,A Case Of Constipation
 Dawn Biafra Eight Duff Deed Arc,Don't Be Afraid Of The Dark
 Flaw Coughs He Gals,Flock Of Seagulls
-Hun Dray Ditch High Ant,Ander The Giant
+Hun Dray Ditch High Ant,Andre The Giant
 Neck Stayed Eel If Furry,Next-day Delivery
 Sick Steamy Knits,Sixty Minutes
 Tray Dirge Hose Mar Kit,Trader Joe's Market
@@ -256,7 +256,7 @@ Hairy Putter Randy Saucer Is Tone,Harry Potter And The Sorcerer's Stone
 Misery Reverb Oat,Missouri River Boat
 Shy Knees Zack Coupon Sure,Chinese Acupuncture
 Wire Ewe Hanoi Ink Mi,Why Are You Annoying Me?
-Asbestos Hik Ann,As Best At I Can
+Asbestos Hik Ann,As Best As I Can
 Gold Lie Ache Height,Go Fly A Kite
 Lair Fink Gout Lout,Laughing Out Loud
 Pea Sank White,Peace And Quiet
@@ -300,15 +300,14 @@ Cough He Anchor Ream,Coffee And Cream
 Bee Keen He Wacks,Bikini Wax
 Airy Ledges Purse Sun,A Religious Person
 Play Sure Adhere,Place Your Ad Here
-You Hess Ascend Her Prize,U.s.s. Enterprise
-Pea Cub Who Icyy Hue,Peek-a-boo! I See You!
+You Hess Ascend Her Prize,U.S.S. Enterprise
+Pea Cub Who Icy Hue,Peek-a-boo! I See You!
 Ghetto Low Duff Vim,Get A Load Of Him
 Aid Hull Tent Tour Tame Mint,Adult Entertainment
 Hen Dean Apple Us,Indianapolis
 Thread Craws,The Red Cross
 Link Hun Ebb Brass Car,Lincoln, Nebraska
-Hat Land Tough All Cons,Alanta Falcons
-Law Duff There Inks,Lord Of The Rings
+Hat Land Tough All Cons,Atlanta Falcons
 Pry Damp Ray Chewed Hiss,Pride And Prejudice
 Theme Hum He Reed Urns,The Mummy Returns
 Wide Own Shoe Seamy Hen Amour,Why Don't You See Me Anymore?
@@ -335,16 +334,16 @@ Star Pore Aisles Hoot,Stop Or I'll Shoot!
 Mercy Dee Spends,Mercedes-Benz
 Egg Hut Tree Hack Shin,A Gut Reaction
 Hit Sun Owe Bulk Halls,It's A Noble Cause
-Likc Wit Ditch Urge Hint,Liquid Detergent
+Lick Wit Ditch Urge Hint,Liquid Detergent
 Super Whom Odors,Subaru Motors
 Why Pure Fee Don Deem Hat,Wipe Your Feet On The Mat
 Sects Santa Sea Tee,Sex And The City
-Dues On Hurry Zone Air,Tuscon, Arizona
+Dues On Hurry Zone Air,Tucson, Arizona
 Hell Beau Soft Teat Able,Elbows Off The Table
 Dungeons Hun,Don Johnson
 Knee Says Sand Nay Fuse,Nieces And Nephews
 Sex Degrease Offs Hep Oration,Six Degrees Of Separation
-Wekk Ant Me Tan Amour,We Can't Meet Anymore
+Week Ant Me Tan Amour,We Can't Meet Anymore
 Shade Hap Ink Its Myth,Jada Pinkett Smith
 Eye Bend Ream Enough Few,I've Been Dreaming Of You
 Hen Fear He Ore Teak Hum Plaques,Inferiority Complex
@@ -385,7 +384,7 @@ If Fairy Witch Weigh Bottle Ooze,Every Which Way But Loose
 Hive 'zine Delight,I've Seen The Light
 Tanks Ford Deem Emma Reese,Thanks For The Memories
 Eek Whole Eye Back Teary Aah,E.Coli Bacteria
-Mile Hit Hlep Oh Knee,My Little Pony
+Mile Hit Help Oh Knee,My Little Pony
 Her Bra Cadaver,Abracadabra
 Halo Garbo Hide Rate Man You,A Low-Carbohydrate Menu
 If Reap Potty Loafs Ray Mound,Everybody Loves Raymond
@@ -413,7 +412,7 @@ Theme Ease Else,The Measles
 Hal In Knifers Hun,Allen Iverson
 Hang Herman Itch Mint,Anger Management
 Hive Bin Gunnel Lung Thyme,I've Been Gone A Long Time
-Wok Lie Canny Chip Shun,Walk Like An Egyptain
+Wok Lie Canny Chip Shun,Walk Like An Egyptian
 Seek You're It Heap Lank Kit,Security Blanket
 Dunce Wet These Malt Inks,Don't Sweat The Small Things
 Oz Trail Ian Axe Scent,Australian Accent
@@ -422,14 +421,13 @@ Hire Are Hey Yak Ounce,IRA Accounts
 Thread Why Tanned Blew,The Red, White And Blue
 Dumb Bees Hutch Hay New Cents,Don't Be Such A Nuisance
 Tad Dozen Peru Vanna Ting,That Doesn't Prove Anything
-Wine Hot Common Upon Seamy,Who Not Come On Up And See Me?
+Wine Hot Common Upon Seamy,Why Not Come On Up And See Me?
 Hummer I Can Graph Heat He,American Graffiti
 By Chore Dung,Bite Your Tongue
 Wreck Create Shun Halve He Hackle,Recreational Vehicle
 Welk Hum Ohm,Welcome Home
 Mace Ease Sand Blue Mink Tails,Macy's And Bloomingdale's
 Pill League Oat,Billy Goat
-Canoe Key Pace He Grit,Can You Keep A Secret?
 Wide Ooh Youth Ink Aisle Of View,Why Do You Think I Love You?
 Few Daunt Nome He Pine How,If You Don't Know Me By Now
 Putt Meow Tough Mimie Missouri,Put Me Out Of My Misery
@@ -502,7 +500,7 @@ Hiawatha Dean Edge Van Pyre,I Was A Teenage Vampire
 Hen Amy Of Deep He Pole,Enemy Of The People
 Noose Pay Per Heap Hoarder,Newspaper Reporter
 Wee Thou Tap Addle,Without A Paddle
-Hay Oh Welt I'm War Nor,Aol Time Warner
+Hay Oh Welt I'm War Nor,AOL Time Warner
 Gun Treat I'm Lum Inn Eight,Country Time Lemonade
 Stay Fence Peel Perc,Steven Spielberg
 Peg Issue Gut Mare Heed,Peggy Sue Got Married
@@ -515,7 +513,6 @@ Mount Hen Lie Inn,Mountain Lion
 Eggs Dream Ache Oh Fur,Extreme Makeover
 Hoe Pew Heaven Ice Hummer,Hope You Have A Nice Summer
 Weep Ring Hood Thins Tool I've,We Bring Good Things To Life
-Moe's Art,Mozart
 Noose Pay Purse Tanned,Newspaper Stand
 These Pie Ooze Hag Dummy,The Spy Who Shagged Me
 Nag Rough Halls,Niagara Falls
@@ -527,7 +524,7 @@ Watt Half Weak Hot Tool Ooze,What Have We Got To Lose?
 Mack Swell Louse Cough He,Maxwell House Coffee
 Eye Yam Thug Ray Test,I Am The Greatest
 My Crow Sir Jury,Microsurgery
-Delgihts Haven Dime,Daylight Savings Time
+Delights Haven Dime,Daylight Savings Time
 Hump Teed Ump Tee,Humpty Dumpty
 Goat Threw Them Oceans,Go Through The Motions
 Bat Chill Harp Hearty,Bachelor Party
@@ -554,7 +551,7 @@ Howdy Vest Fuzz Juan,How The West Was Won
 Dawned Ease Mi,Don't Tease Me
 Pay Perk Lips,Paper Clips
 Raw Key Row Die Scream,Rocky Road Ice Cream
-Jewel Us Seize Her,Julius Ceasar
+Jewel Us Seize Her,Julius Caesar
 Bee Foreign Halved Her,Before And After
 He-Man Seep Pay Shun,Emancipation
 Ma Neat Inks Hark,Man-Eating Shark
@@ -562,7 +559,7 @@ Tin Purse Scent Desk Hound,Ten Percent Discount
 Too Niece Oprah Know,Tony Soprano
 Hen Day Anna's Date,Indiana State
 Height Whole Chews Hoe,I Told You So
-Fee Henna Walls Moo Sick,Wienna Waltz Music
+Fee Henna Walls Moo Sick,Vienna Waltz Music
 Pen Elope Eek Rues,Penelope Cruz
 These Ant Are Claws,The Santa Clause
 Sit Ease Lick Hearse,City Slickers
@@ -635,7 +632,7 @@ Hat Ten Shunned Deaf Asset Tis Hoarder,Attention Deficit Disorder
 Nest Leak Grunge Jabar,Nestle Crunch Bar
 Toe Tall Gun Few Shun,Total Confusion
 Up Hound Hug Round Round,A Pound Of Ground Round
-Oh Firm Hide Head Potty,Over My Bead Body
+Oh Firm Hide Head Potty,Over My Dead Body
 Hoe Moth Herb Rave,Home Of The Brave
 Eye Mile Tough Guess,I'm Out Of Gas
 Us Candle Us Of Hair,A Scandalous Affair
@@ -660,7 +657,7 @@ Ghetto Four Abe Row Can Art,Get Over A Broken Heart
 Dry Fink Mist Hazy,Driving Miss Daisy
 Minnie Sew DAT Wins,Minnesota Twins
 Pull Ease Clothes Theodore,Please Close The Door
-Thug Yet His Burger Dress,The Ghettysburg Address
+Thug Yet His Burger Dress,The Gettysburg Address
 You Rowed His Knee,Euro Disney
 Spar Cling What Her,Sparkling Water
 Nose Moe Kings Own,No-Smoking Zone
@@ -673,7 +670,6 @@ Eye Screams Hand Witch,Ice Cream Sandwich
 Eight Hoop Hay,A Toupee
 Barbie Cute Rips,Barbecued Ribs
 Fur Chins Ray Chords,Virgin Records
-Date Roy Pea Stuns,Detroit Pistons
 Lit Skit Tone Width Hit,Let's Get On With It
 Pull Ease Leaf Mia Lone,Please Leave Me Alone
 You Says Dye Erected,Use As Directed
@@ -686,12 +682,12 @@ Ewe Hardy Juan Form He,You Are The One For Me
 Barfs Hope,Bar Of Soap
 Dream Mennen Eight Hub,Three Men In A Tub
 Aisle Me Jewel Hater,I'll Meet You Later
-Eyeed Ream Oaf Gene He,I Dream Of Genie
+Eyed Ream Oaf Gene He,I Dream Of Jeannie
 Pea Pill Arf Honey,People Are Funny
 Win Airy Meds Alley,When Harry Met Sally
 Theme Alt Ease Falk Inn,The Maltese Falcon
 Nosh Hun Elsie Cure Itty,National Security
-Icing Adder Hype Itch,A Sing At A Hight Pitch
+Icing Adder Hype Itch,I Sing At A High Pitch
 Hawk Hidden Us Hide,All Kidding Aside
 Ease Iraq Grew Pea,He's A Rock Groupie
 Damp Oh Rare Each Hob,Temporary Job
@@ -715,7 +711,6 @@ Weigh Cup Pin Theme Awning,Wake Up In The Morning
 Sea Hearse Robe Huck,Sears Roebuck
 May Tricks Reel Owe Dead,Matrix Reloaded
 Han Dover Theme Honey,Hand Over The Money
-Ape Arrows Uncle As His,A Pair Of Sunglasses
 Bigger Scant Beach Who Seers,Beggars Can't Be Choosers
 Hit Sewn Leap Uphill Of,It's Only Puppy Love
 Fell Edge Eddie Hit,Village Idiot
@@ -848,7 +843,7 @@ Haste Huff Danny Mull,A Stuffed Animal
 Intern Ash Shun El Tree Tea,International Treaty
 Mill Can Goo Keys,Milk And Cookies
 Peek Czar Hinder Ten Mint,Pixar Entertainment
-Sill Fester Ant We Tee,Slyvester And Tweety
+Sill Fester Ant We Tee,Sylvester And Tweety
 Tie Dull Waif,Tidal Wave
 Utah Kin Tomb He,You Talkin' To Me?
 Stay Cake Lame,Stake A Claim
@@ -870,7 +865,7 @@ Annie Turn Awful Lame,An Eternal Flame
 Since Henna Tea Ojai Owe,Cincinnati, Ohio
 Mike Lion Tis Inner Scent,My Client Is Innocent
 Hoe Met Quit Heel Hone,Home Equity Loan
-Egg Hood Sore Solve Eye Burr,A Good Souce Of Fiber
+Egg Hood Sore Solve Eye Burr,A Good Source Of Fiber
 Thick Hard Enough Heed Hen,The Garden Of Eden
 Wheel Yun Air Ream He,Will You Marry Me?
 Way Tan Seattle Tude,Wait-And-See Attitude
@@ -924,7 +919,7 @@ Ace Lip Puff That Hung,A Slip Of The Tongue
 Tooth Hum Sup,Two Thumbs Up
 Wide Hunch Uke Hall,Why Don't You Call?
 Toe Reese Cell Ink,Tori Spelling
-Seize Hearse Sail Ed,Ceasar Salad
+Seize Hearse Sail Ed,Caesar Salad
 Hairy Sin Fort,Harrison Ford
 Mare Reel Inn Man's Hun,Marilyn Manson
 Deed Roy Die Guess,Detroit Tigers
@@ -936,13 +931,13 @@ My Crows Off Tex Sell,Microsoft Excel
 Lettuce Spray,Let Us Pray
 Upper Fig Twirled,A Perfect World
 Hits Tan Treason,It Stands To Reason
-Gulls Gouts Sofa Mare Eek Her,Girl Scout Of America
+Gulls Gouts Sofa Mare Eek Her,Girl Scouts Of America
 Berth Daze Hoot,Birthday Suit
 Sham Paint Host,Champagne Toast
 Up He Such Ease,A Piece Of Cheese
 Swede Boat Eight Dope Eye,Sweet Potato Pie
 Paper Fum Ooh Fee,Pay-Per-View Movie
-Lee Hone Art Goudh Dove Inch He,Leonardo Da Vinci
+Lee Hone Art Go Dove Inch He,Leonardo Da Vinci
 Hen Deep Hen Danced Hay,Independence Day
 Dents Hell Wars Shin Dun,Denzel Washington
 Disguise They'll Him It,The Sky's The Limit
@@ -995,7 +990,7 @@ Wrist Hush Herd,Rest Assured
 Police Collar Dock Tour,Please Call A Doctor
 Sin A Men Sure Grr!,Cinnamon Sugar
 Cuff Hearse Dory,Cover Story
-Chew Lie Thief Oath,July The Forth
+Chew Lie Thief Oath,July The Fourth
 Chain Solve Fad Dress,Change Of Address
 Ball Stunk Lamp Shouter,Boston Clam Chowder
 Bloop Lades Pay Shell,Blue Plate Special
