@@ -17,7 +17,7 @@ The start page lets you pick a game. Each game lives in its own folder and share
 - **Menu** — tap *Mad Gab* in the top corner. The proctor gets *New game* (stops any round and sets every team back to 0), *Reshuffle deck* and *Leave game* (the viewer sees that the game ended); a viewer gets *Leave room*; the start page gets *How to play* and *All games*. Every screen also has *About*, which shows the version and card counts.
 - **Demo** — tap *Try a demo* on the start page. It shows one example puzzle (*Olive Yew*), reveals the answer (*I Love You*), then explains the two roles.
 
-Devices sync through a Firebase Realtime Database (project `madgab-b4a1e`); its rules are in `database.rules.json` and deploy with `npx firebase-tools deploy --only database`. Cards come from `madgab/flashcards.txt` (`puzzle,answer` per line). `madgab/hard.txt` lists the puzzles rated hard (one per line); every other card is easy. Old room links (`/?join=CODE`) are forwarded to `madgab/`.
+Devices sync through a Firebase Realtime Database (project `madgab-b4a1e`); its rules are in `database.rules.json` and deploy with `npx firebase-tools deploy --only database`. Cards come from `madgab/flashcards.txt`, one per line as `puzzle,answer[,easy|hard]`. The level is optional and defaults to hard; answers may contain commas. Old room links (`/?join=CODE`) are forwarded to `madgab/`.
 
 ## Watch Ya Mouth
 

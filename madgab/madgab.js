@@ -44,16 +44,19 @@ let room = null, viewers = 0;
 const level = () => $('optLevel').value;
 
 async function loadCards() {
-  const [text, hardText] = await Promise.all([lines('flashcards.txt'), lines('hard.txt').catch(() => [])]);
-  const hard = new Set(hardText.map(s => s.toLowerCase()));
+  // Each line is puzzle,answer[,easy|hard]. Answers may contain commas, so only a
+  // trailing easy/hard counts as the level; with no level the card is hard.
+  const text = await lines('flashcards.txt');
   const seen = new Set(), cards = [];
-  for (const line of text) {
+  for (let line of text) {
+    const m = line.match(/,\s*(easy|hard)\s*$/i);
+    if (m) line = line.slice(0, m.index);
     const i = line.indexOf(',');
     if (i < 1) continue;
     const puzzle = line.slice(0, i).trim(), answer = line.slice(i + 1).trim();
     if (!puzzle || !answer || seen.has(puzzle.toLowerCase())) continue;
     seen.add(puzzle.toLowerCase());
-    cards.push({ puzzle, answer, hard: hard.has(puzzle.toLowerCase()) });
+    cards.push({ puzzle, answer, hard: !m || m[1].toLowerCase() === 'hard' });
   }
   return cards;
 }
