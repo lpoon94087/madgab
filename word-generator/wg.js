@@ -1,15 +1,15 @@
 import { $, store, lines, keepAwake, initMenu, initAbout, createRounds } from '../shared/common.js';
-import { hostRoom, viewRoom, roundState } from '../shared/rooms.js';
+import { hostRoom, viewRoom, roundState, savedRoom } from '../shared/rooms.js';
 
 // Word Generator: words for Charades, Pictionary, Password and the like.
 // The lists are lists/<id>.txt (one word per line), described by lists.json.
 // "Just words" hands out one word at a time; timed rounds use the shared round engine.
-// This device is the moderator and works on its own; it also hosts a room, so other
-// devices can join as read-only viewers of the current word (shared/rooms.js).
+// Like Mad Gab, a device is either the moderator (every control; works on its own too)
+// or a read-only viewer of the moderator's word, synced through a room (shared/rooms.js).
 const VERSION = '1.2', RELEASED = '2026-11-17';
 
-const sections = ['setup', 'free', 'ready', 'play', 'over', 'join', 'viewer'];
-let at = 'setup', room = null, role = 'moderator';
+const sections = ['home', 'setup', 'free', 'ready', 'play', 'over', 'join', 'viewer'];
+let at = 'home', room = null, role = null;
 const show = name => {
   at = name; sections.forEach(s => $(s).classList.toggle('hidden', s !== name));
   if (room) room.send();
@@ -26,6 +26,14 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHow(); 
 
 let G = null, lists = [], cards = [];
 const byId = new Map();
+// Load lists.json and every list once, for the moderator or the About box.
+let loading = null;
+const loadLists = () => loading || (loading = (async () => {
+  lists = await fetch('lists.json', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+  lists.forEach(l => byId.set(l.id, l));
+  const words = await Promise.all(lists.map(l => lines(`lists/${l.id}.txt`)));
+  lists.forEach((l, i) => words[i].forEach(word => cards.push({ word, list: l.id })));
+})());
 
 // The list picker: every list, plus "all of" options for each family and for everything.
 // An option's value is the comma-separated ids it covers.
@@ -96,47 +104,46 @@ function viewState() {
     result: r => [r.word, chosen().size > 1 ? byId.get(r.list).name : ''],
   });
 }
-async function closeRoom() {
-  if (!confirm('Close the room? Viewers will see that the game ended, and this device gets a new room code.')) return;
+async function leaveGame() {
+  if (!confirm('Leave this game? Viewers will see that it has ended.')) return;
   if (G) G.stop();
-  await room.close();
+  if (room) await room.close();
   location.href = location.pathname;
 }
 const viewer = viewRoom({ game: 'wg', show });
 function startViewer(code) { role = 'viewer'; viewer.open(code); }
-// Switching this device to a viewer gives up its own room first.
-$('btnViewer').onclick = async () => { if (room) await room.close(); location.href = location.pathname + '?view'; };
+$('btnViewer').onclick = () => startViewer('');
+$('btnModerator').onclick = () => startModerator();
 
 // ───────────── Menu / About ─────────────
 const showAbout = initAbout({
   version: VERSION, released: RELEASED,
-  cardsText: () => `${cards.length.toLocaleString()} words in ${lists.length} lists.`,
+  cardsText: async () => { await loadLists(); return `${cards.length.toLocaleString()} words in ${lists.length} lists.`; },
 });
-initMenu(() => role === 'viewer' ? [
-  ['Leave room', () => { location.href = location.pathname; }, 'danger'],
-  ['How to play', openHow],
-  ['About', showAbout],
-] : [
-  ...(G ? [['New game', G.newGame], ['Reshuffle all words', G.reshuffle]] : []),
-  ...(room ? [['Close room', closeRoom, 'danger']] : []),
-  ['How to play', openHow],
-  ['All games', () => { location.href = '../'; }],
-  ['About', showAbout],
-]);
+initMenu(() => {
+  const items = [];
+  if (role === 'moderator') items.push(
+    ...(G ? [['New game', G.newGame], ['Reshuffle all words', G.reshuffle]] : []),
+    ['Leave game', leaveGame, 'danger'],
+  );
+  else if (role === 'viewer') items.push(['Leave room', () => { location.href = location.pathname; }, 'danger']);
+  items.push(['How to play', openHow]);
+  if (!role) items.push(['All games', () => { location.href = '../'; }]);
+  return [...items, ['About', showAbout]];
+});
 
 // ───────────── Start ─────────────
-const params = new URLSearchParams(location.search);
-if (params.has('join') || params.has('view')) startViewer(params.get('join') || '');
-else await startModerator();
+const joinParam = new URLSearchParams(location.search).get('join');
+if (joinParam) startViewer(joinParam);
+else if (savedRoom('wg')) startModerator();   // a moderator reloading keeps its room
+else show('home');
 
 async function startModerator() {
-  show('setup');
+  if (role) return;
+  role = 'moderator'; show('setup'); keepAwake();
   $('optCover').checked = st.get('cover', true);
   try {
-    lists = await fetch('lists.json', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
-    lists.forEach(l => byId.set(l.id, l));
-    const words = await Promise.all(lists.map(l => lines(`lists/${l.id}.txt`)));
-    lists.forEach((l, i) => words[i].forEach(word => cards.push({ word, list: l.id })));
+    await loadLists();
     buildPicker();
     G = createRounds({
       prefix: 'wg', cards, show, noun: 'words',

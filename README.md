@@ -25,11 +25,11 @@ The reader wears a cheek retractor and reads each phrase out loud; their team ha
 
 ## Word Generator
 
-Words for Charades, Pictionary, Password, describe-it games and anything else. Pick a list (or a mix such as *All Pictionary* or *Everything*), then either:
+Words for Charades, Pictionary, Password, describe-it games and anything else. Choose *Moderator*, pick a list (or a mix such as *All Pictionary* or *Everything*), then either:
 
 - **Just words** — tap *Next word* whenever you need one. Each new word is covered until tapped (a setup option), so only the player holding the phone sees it. In a mix, each word says which list it came from and what to do with it.
 - **Timed rounds** — the same teams, clock, Got It / Skip and results as the other games.
-- **Viewers** — the device you start on is the moderator and has every control. It also opens a room: under *Show the words on other screens* is its code and QR code. A viewer (scan the code, or tap *Use this device as a viewer* and type it) shows the current word and its list, plus the clock, scores and results in timed rounds, and can't change anything. Viewers show the word even when it's covered on the moderator. *Close room* in the menu ends the game on the viewers.
+- **Moderator or Viewer** — like Mad Gab, the Word Generator opens on a choice. The **Moderator** has every control and works fine as the only device; its setup screen shows a room code and QR code. A **Viewer** (scan the code, or tap *Viewer* and type it) shows the current word and its list, plus the clock, scores and results in timed rounds, and can't change anything. Viewers show the word even when it's covered on the moderator. *Leave game* in the moderator's menu ends the game on the viewers.
 
 Words don't repeat until the chosen lists run out. The lists are `word-generator/lists/<id>.txt`, one word per line; `word-generator/lists.json` gives each its name, its group in the picker (*Games* or *Topics*), its family (lists in the same family get an *All …* mix) and the tip shown with it. To add a list, add a file and an entry. All the lists were written for this site.
 

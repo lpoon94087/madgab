@@ -35,14 +35,31 @@
       <li><b>Password</b> — one-word clues only.</li>
       <li><b>Describe it</b> — talk around it without saying any part of it.</li>
     </ul>
-    <p><b>More screens</b> — this device is the <b>moderator</b>: it has every control. Other devices can scan the QR code under <i>Show the words on other screens</i> and become <b>viewers</b>, which show the current word, the clock and the scores, but can't change anything.</p>
+    <p><b>More screens</b> — the <b>moderator</b> has every control. Other devices choose <b>Viewer</b> and join with the moderator's room code or QR code. They show the current word, the clock and the scores, but can't change anything.</p>
     <button class="primary" id="btnHowClose" style="width:100%">Got it</button>
   </div>
 </div>
 
 <main>
-  <!-- Setup -->
+  <!-- Choose a role -->
+  <section id="home" class="hidden">
+    <div class="big-choice">
+      <button class="primary" id="btnModerator">Moderator<small>Runs the game. Picks the list, taps Next word, Got It or Skip.</small></button>
+      <button id="btnViewer">Viewer<small>A read-only screen. Shows the word the moderator is on.</small></button>
+    </div>
+    <p class="muted center" style="margin-top:24px">Playing on one phone? Just pick Moderator. To show the words on more screens, open this page on them, choose Viewer and type the room code.</p>
+    <p class="center"><a class="back" href="../">← All games</a></p>
+  </section>
+
+  <!-- Moderator: setup -->
   <section id="setup" class="hidden">
+    <div class="panel center">
+      <div class="muted">Room code</div>
+      <div class="code" id="roomCode">····</div>
+      <p class="muted" id="viewerCount">Waiting for a viewer…</p>
+      <div id="qr"></div>
+      <p class="muted" style="font-size:14px">Scan, or open <a id="joinLink" href="#"></a></p>
+    </div>
     <div class="panel">
       <label for="optList">Word list</label>
       <select id="optList"></select>
@@ -73,17 +90,6 @@
       <p class="muted" id="deckInfo" style="font-size:14px"></p>
       <button id="btnStart" style="width:100%">Start timed game</button>
     </div>
-    <details class="panel" id="roomBox" style="margin-top:16px">
-      <summary style="cursor:pointer;font-weight:600">Show the words on other screens · room <span class="code" id="roomCode" style="font-size:20px;letter-spacing:3px">····</span></summary>
-      <div class="center" style="margin-top:14px">
-        <p class="muted" id="viewerCount" style="margin-top:0">Waiting for a viewer…</p>
-        <div id="qr"></div>
-        <p class="muted" style="font-size:14px">Scan, or open <a id="joinLink" href="#"></a></p>
-        <p class="muted" style="font-size:14px;margin-bottom:0">Viewers see each word, the clock and the scores. Only this device has the controls.</p>
-      </div>
-    </details>
-    <p class="center"><button id="btnViewer">Use this device as a viewer</button></p>
-    <p class="center"><a class="back" href="../">← All games</a></p>
   </section>
 
   <!-- Viewer: join -->
