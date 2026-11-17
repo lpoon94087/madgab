@@ -1,12 +1,19 @@
 import { $, store, lines, keepAwake, initMenu, initAbout, createRounds } from '../shared/common.js';
+import { hostRoom, viewRoom, roundState } from '../shared/rooms.js';
 
-// Word Generator: words for Charades, Pictionary, Password and the like, on one device.
+// Word Generator: words for Charades, Pictionary, Password and the like.
 // The lists are lists/<id>.txt (one word per line), described by lists.json.
 // "Just words" hands out one word at a time; timed rounds use the shared round engine.
-const VERSION = '1.1', RELEASED = '2026-11-17';
+// This device is the moderator and works on its own; it also hosts a room, so other
+// devices can join as read-only viewers of the current word (shared/rooms.js).
+const VERSION = '1.2', RELEASED = '2026-11-17';
 
-const sections = ['setup', 'free', 'ready', 'play', 'over'];
-const show = name => sections.forEach(s => $(s).classList.toggle('hidden', s !== name));
+const sections = ['setup', 'free', 'ready', 'play', 'over', 'join', 'viewer'];
+let at = 'setup', room = null, role = 'moderator';
+const show = name => {
+  at = name; sections.forEach(s => $(s).classList.toggle('hidden', s !== name));
+  if (room) room.send();
+};
 const st = store('wg');
 
 // How to play
@@ -51,15 +58,16 @@ function onListChange() {
 }
 
 // ───────────── Just words ─────────────
-let covered = false;
+let covered = false, freeCard = null;
 function freeWord() {
-  const c = G.draw();
+  const c = freeCard = G.draw();
   $('fWord').textContent = c.word;
   // With a mix, say which list the word came from, so the player knows to draw it or act it.
   $('fTip').textContent = chosen().size > 1 ? `${byId.get(c.list).name} · ${byId.get(c.list).tip}` : chosenTip();
   setCovered($('optCover').checked);
   const left = G.left();
   $('fLeft').textContent = `${left} word${left === 1 ? '' : 's'} left before the list starts over`;
+  if (room) room.send();
 }
 function setCovered(on) {
   covered = on;
@@ -70,7 +78,7 @@ function startFree() {
   if (!G) return;
   st.set('cover', $('optCover').checked);
   $('fList').textContent = chosenName();
-  show('free'); keepAwake(); freeWord();
+  freeWord(); show('free'); keepAwake();
 }
 $('fCard').onclick = () => setCovered(!covered);
 $('fCard').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCovered(!covered); } };
@@ -78,40 +86,75 @@ $('btnFreeNext').onclick = freeWord;
 $('btnFreeBack').onclick = () => show('setup');
 $('btnFree').onclick = startFree;
 
+// ───────────── Viewers ─────────────
+// Viewers always see the word, even when it's covered here: they're the screen it's shown on.
+function viewState() {
+  if (at === 'free') return { phase: 'free', card: freeCard.word, note: byId.get(freeCard.list).name };
+  if (at === 'setup') return { phase: 'waiting', banner: 'Waiting for the moderator…' };
+  return roundState(G, {
+    card: c => c.word, note: c => byId.get(c.list).name,
+    result: r => [r.word, chosen().size > 1 ? byId.get(r.list).name : ''],
+  });
+}
+async function closeRoom() {
+  if (!confirm('Close the room? Viewers will see that the game ended, and this device gets a new room code.')) return;
+  if (G) G.stop();
+  await room.close();
+  location.href = location.pathname;
+}
+const viewer = viewRoom({ game: 'wg', show });
+function startViewer(code) { role = 'viewer'; viewer.open(code); }
+// Switching this device to a viewer gives up its own room first.
+$('btnViewer').onclick = async () => { if (room) await room.close(); location.href = location.pathname + '?view'; };
+
 // ───────────── Menu / About ─────────────
 const showAbout = initAbout({
   version: VERSION, released: RELEASED,
   cardsText: () => `${cards.length.toLocaleString()} words in ${lists.length} lists.`,
 });
-initMenu(() => [
+initMenu(() => role === 'viewer' ? [
+  ['Leave room', () => { location.href = location.pathname; }, 'danger'],
+  ['How to play', openHow],
+  ['About', showAbout],
+] : [
   ...(G ? [['New game', G.newGame], ['Reshuffle all words', G.reshuffle]] : []),
+  ...(room ? [['Close room', closeRoom, 'danger']] : []),
   ['How to play', openHow],
   ['All games', () => { location.href = '../'; }],
   ['About', showAbout],
 ]);
 
 // ───────────── Start ─────────────
-show('setup');
-$('optCover').checked = st.get('cover', true);
-try {
-  lists = await fetch('lists.json', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
-  lists.forEach(l => byId.set(l.id, l));
-  const words = await Promise.all(lists.map(l => lines(`lists/${l.id}.txt`)));
-  lists.forEach((l, i) => words[i].forEach(word => cards.push({ word, list: l.id })));
-  buildPicker();
-  G = createRounds({
-    prefix: 'wg', cards, show, noun: 'words',
-    fits: i => chosen().has(cards[i].list),
-    info: chosenName,
-    renderCard: c => {
-      $('pWord').textContent = c.word;
-      $('pList').textContent = chosen().size > 1 ? byId.get(c.list).name : '';
-    },
-    result: r => [r.word, chosen().size > 1 ? byId.get(r.list).name : ''],
-  });
-  $('optList').onchange = onListChange;
-  onListChange();
-} catch {
-  $('deckInfo').textContent = 'Could not load the word lists — open this page from a web server, not as a local file.';
-  $('btnStart').disabled = $('btnFree').disabled = true;
+const params = new URLSearchParams(location.search);
+if (params.has('join') || params.has('view')) startViewer(params.get('join') || '');
+else await startModerator();
+
+async function startModerator() {
+  show('setup');
+  $('optCover').checked = st.get('cover', true);
+  try {
+    lists = await fetch('lists.json', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+    lists.forEach(l => byId.set(l.id, l));
+    const words = await Promise.all(lists.map(l => lines(`lists/${l.id}.txt`)));
+    lists.forEach((l, i) => words[i].forEach(word => cards.push({ word, list: l.id })));
+    buildPicker();
+    G = createRounds({
+      prefix: 'wg', cards, show, noun: 'words',
+      fits: i => chosen().has(cards[i].list),
+      info: chosenName,
+      renderCard: c => {
+        $('pWord').textContent = c.word;
+        $('pList').textContent = chosen().size > 1 ? byId.get(c.list).name : '';
+      },
+      result: r => [r.word, chosen().size > 1 ? byId.get(r.list).name : ''],
+      onChange: () => room && room.send(),
+    });
+    $('optList').onchange = onListChange;
+    onListChange();
+  } catch {
+    $('deckInfo').textContent = 'Could not load the word lists — open this page from a web server, not as a local file.';
+    $('btnStart').disabled = $('btnFree').disabled = true;
+    return;
+  }
+  room = hostRoom({ game: 'wg', state: viewState });
 }

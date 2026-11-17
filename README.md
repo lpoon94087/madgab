@@ -8,7 +8,7 @@ The start page lets you pick a game. Each game lives in its own folder and share
 | --- | --- | --- |
 | `madgab/` | Mad Gab | 2 or more: a moderator and one or more viewers |
 | `watch-ya-mouth/` | Watch Ya Mouth | 1, held by the reader |
-| `word-generator/` | Word Generator | 1 |
+| `word-generator/` | Word Generator | 1, or a moderator plus any number of viewers |
 
 ## Mad Gab
 
@@ -17,7 +17,7 @@ The start page lets you pick a game. Each game lives in its own folder and share
 - **Menu** — tap *Mad Gab* in the top corner. The moderator gets *New game* (stops any round and sets every team back to 0), *Reshuffle deck* and *Leave game* (the viewer sees that the game ended); a viewer gets *Leave room*; the start page gets *How to play* and *All games*. Every screen also has *About*, which shows the version and card counts.
 - **Demo** — tap *Try a demo* on the start page. It shows one example puzzle (*Olive Yew*), reveals the answer (*I Love You*), then explains the two roles.
 
-Devices sync through a Firebase Realtime Database (project `madgab-b4a1e`); its rules are in `database.rules.json` and deploy with `npx firebase-tools deploy --only database`. Cards come from `madgab/flashcards.txt`, one per line as `puzzle,answer[,easy|hard]`. The level is optional and defaults to hard; answers may contain commas. Old room links (`/?join=CODE`) are forwarded to `madgab/`.
+Devices sync through rooms in a Firebase Realtime Database (project `madgab-b4a1e`); its rules are in `database.rules.json` and deploy with `npx firebase-tools deploy --only database`. Cards come from `madgab/flashcards.txt`, one per line as `puzzle,answer[,easy|hard]`. The level is optional and defaults to hard; answers may contain commas. Old room links (`/?join=CODE`) are forwarded to `madgab/`.
 
 ## Watch Ya Mouth
 
@@ -29,12 +29,14 @@ Words for Charades, Pictionary, Password, describe-it games and anything else. P
 
 - **Just words** — tap *Next word* whenever you need one. Each new word is covered until tapped (a setup option), so only the player holding the phone sees it. In a mix, each word says which list it came from and what to do with it.
 - **Timed rounds** — the same teams, clock, Got It / Skip and results as the other games.
+- **Viewers** — the device you start on is the moderator and has every control. It also opens a room: under *Show the words on other screens* is its code and QR code. A viewer (scan the code, or tap *Use this device as a viewer* and type it) shows the current word and its list, plus the clock, scores and results in timed rounds, and can't change anything. Viewers show the word even when it's covered on the moderator. *Close room* in the menu ends the game on the viewers.
 
 Words don't repeat until the chosen lists run out. The lists are `word-generator/lists/<id>.txt`, one word per line; `word-generator/lists.json` gives each its name, its group in the picker (*Games* or *Topics*), its family (lists in the same family get an *All …* mix) and the tip shown with it. To add a list, add a file and an entry. All the lists were written for this site.
 
 ## Code
 
 - `shared/common.js` — the round engine (`createRounds`: teams, scores, a shuffled deck saved on the device so cards don't repeat until you reshuffle, the clock, Got It / Skip, results), plus the menu, the About box, beeps and the screen wake lock.
+- `shared/rooms.js` — rooms for games with viewers (Mad Gab, Word Generator): the moderator claims a 4-letter code and sends what viewers should see; the viewer screen joins and shows it read-only. Each room is tagged with its game, so a code from one game can't be joined from another.
 - `shared/style.css` — styles for every page.
 - `<game>/index.html` and `<game>/<game>.js` — the game's screens and whatever is specific to it (Mad Gab's rooms and viewer, its demo, its Easy/Hard filter).
 
