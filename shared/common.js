@@ -84,7 +84,7 @@ export function initAbout({ version, released, cardsText }) {
 }
 
 // ───────────────────────── ROUNDS ─────────────────────────
-// The proctor's side of a timed, team-based card game. The page must contain these ids:
+// The moderator's side of a timed, team-based card game. The page must contain these ids:
 //   setup:  optTime, optTeams, deckInfo, btnStart
 //   ready:  rScores, rBanner, rInfo, btnStartNext
 //   play:   pScores, pClock, btnSkip, btnGot, btnPause, btnEnd   (+ elements with class "hide-on-pause")

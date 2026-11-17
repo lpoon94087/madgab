@@ -19,7 +19,7 @@
     <h2 id="aboutTitle">Mad <span>Gab</span></h2>
     <div class="muted" id="aboutVersion"></div>
     <p id="aboutCards"></p>
-    <p class="muted" style="font-size:15px">Say the puzzle words out loud until they sound like a familiar phrase. One device is the proctor, another is the viewer; they stay in sync through Firebase.</p>
+    <p class="muted" style="font-size:15px">Say the puzzle words out loud until they sound like a familiar phrase. One device is the moderator, another is the viewer; they stay in sync through Firebase.</p>
     <button class="primary" id="btnAboutClose" style="width:100%">Close</button>
   </div>
 </div>
@@ -28,10 +28,10 @@
   <!-- Choose a role -->
   <section id="home">
     <div class="big-choice">
-      <button class="primary" id="btnProctor">Proctor<small>Runs the game. Sees the answers, taps Got It or Skip.</small></button>
+      <button class="primary" id="btnModerator">Moderator<small>Runs the game. Sees the answers, taps Got It or Skip.</small></button>
       <button id="btnViewer">Viewer<small>The screen the team reads. Shows only the puzzle.</small></button>
     </div>
-    <p class="muted center" style="margin-top:24px">Open this page on two devices. One is the proctor, the other joins with the room code.</p>
+    <p class="muted center" style="margin-top:24px">Open this page on two devices. One is the moderator, the other joins with the room code.</p>
     <p class="center"><button id="btnDemo">New to Mad Gab? Try a demo</button></p>
     <p class="center"><a class="back" href="../">← All games</a></p>
   </section>
@@ -47,14 +47,14 @@
     </div>
     <div class="panel hidden" id="dHow">
       <p style="margin-top:0"><b>That's the whole game.</b> Each card is a string of real words that, said aloud, sounds like a familiar phrase.</p>
-      <p>The team that's guessing reads the <b>Viewer</b> screen and keeps saying the words until someone hears the phrase. The <b>Proctor</b> holds the answer and taps <b>Got It</b> or <b>Skip</b> before the clock runs out.</p>
+      <p>The team that's guessing reads the <b>Viewer</b> screen and keeps saying the words until someone hears the phrase. The <b>Moderator</b> holds the answer and taps <b>Got It</b> or <b>Skip</b> before the clock runs out.</p>
       <div class="row"><button id="btnDemoAgain">See the example again</button><button class="primary" id="btnDemoDone">Back to start</button></div>
     </div>
   </section>
 
   <!-- Viewer: join -->
   <section id="join" class="hidden panel">
-    <label for="joinCode">Room code (shown on the proctor's screen)</label>
+    <label for="joinCode">Room code (shown on the moderator's screen)</label>
     <div class="row">
       <input id="joinCode" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="ABCD" style="font-size:28px;letter-spacing:6px;text-transform:uppercase">
       <button class="primary" id="btnJoin" style="flex:0 0 auto">Join</button>
@@ -73,7 +73,7 @@
     </div>
   </section>
 
-  <!-- Proctor: setup -->
+  <!-- Moderator: setup -->
   <section id="setup" class="hidden">
     <div class="panel center">
       <div class="muted">Room code</div>
@@ -112,7 +112,7 @@
     </div>
   </section>
 
-  <!-- Proctor: between rounds — just whose turn it is and a start button -->
+  <!-- Moderator: between rounds — just whose turn it is and a start button -->
   <section id="ready" class="hidden viewer-stage">
     <div class="scorebar" id="rScores"></div>
     <div class="banner" id="rBanner"></div>
@@ -122,7 +122,7 @@
     </div>
   </section>
 
-  <!-- Proctor: playing -->
+  <!-- Moderator: playing -->
   <section id="play" class="hidden">
     <div class="scorebar" id="pScores"></div>
     <div class="clock" id="pClock">2:00</div>
@@ -141,7 +141,7 @@
     </div>
   </section>
 
-  <!-- Proctor: round over -->
+  <!-- Moderator: round over -->
   <section id="over" class="hidden">
     <div class="scorebar" id="oScores"></div>
     <div class="banner" id="oBanner"></div>

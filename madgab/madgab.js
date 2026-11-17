@@ -2,7 +2,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebas
 import { getDatabase, ref, set, onValue, onDisconnect, runTransaction } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js';
 import { $, esc, fmt, store, lines, keepAwake, initMenu, initAbout, createRounds } from '../shared/common.js';
 
-// Mad Gab: a proctor device runs the game; viewer devices show the team only the puzzle.
+// Mad Gab: a moderator device runs the game; viewer devices show the team only the puzzle.
 // They sync through Firebase Realtime Database: rooms/<CODE>/{owner,state,viewers}.
 const VERSION = '1.7', RELEASED = '2026-11-17';
 
@@ -14,11 +14,11 @@ const db = getDatabase(initializeApp({
   appId: '1:168797707932:web:4cff56d10c1d38319bd759',
 }));
 
-// Server clock offset, so the viewer's countdown matches the proctor's even if device clocks differ.
+// Server clock offset, so the viewer's countdown matches the moderator's even if device clocks differ.
 let offset = 0;
 onValue(ref(db, '.info/serverTimeOffset'), s => { offset = s.val() || 0; });
 const now = () => Date.now() + offset;
-// A per-tab id: the proctor's claim on its room code, or a viewer's presence entry.
+// A per-tab id: the moderator's claim on its room code, or a viewer's presence entry.
 const ME = (() => {
   let id = null;
   try { id = sessionStorage.getItem('mg.me'); } catch {}
@@ -38,7 +38,7 @@ function renderScores(el, teams, current) {
 
 let role = null;
 
-// ───────────────────────── PROCTOR ─────────────────────────
+// ───────────────────────── MODERATOR ─────────────────────────
 let G = null;               // the round engine, once the cards are loaded
 let room = null, viewers = 0;
 const level = () => $('optLevel').value;
@@ -61,8 +61,8 @@ async function loadCards() {
   return cards;
 }
 
-async function startProctor() {
-  role = 'proctor'; show('setup'); keepAwake();
+async function startModerator() {
+  role = 'moderator'; show('setup'); keepAwake();
   $('optLevel').value = st.get('level', 'all');
   let cards;
   try { cards = await loadCards(); } catch {
@@ -89,7 +89,7 @@ async function openRoom(code) {
   setStatus('Opening room…', false);
   let res;
   try {
-    // Claim the code unless another proctor is using it (claims go stale after 12 hours).
+    // Claim the code unless another moderator is using it (claims go stale after 12 hours).
     res = await runTransaction(ref(db, `rooms/${code}/owner`), cur => {
       if (!cur || cur.id === ME || now() - cur.at > 12 * 3600e3) return { id: ME, at: now() };
       return undefined;
@@ -139,7 +139,7 @@ async function leaveGame() {
   location.href = location.pathname;
 }
 
-$('btnProctor').onclick = startProctor;
+$('btnModerator').onclick = startModerator;
 
 // ───────────────────────── VIEWER ─────────────────────────
 const V = { code: '', state: null, unsubs: [] };
@@ -165,7 +165,7 @@ function join(code) {
     const s = snap.val();
     if (!s) {
       show('join');
-      $('joinMsg').textContent = `No game in room ${code} yet. Check the code on the proctor's screen — this page will join as soon as it's open.`;
+      $('joinMsg').textContent = `No game in room ${code} yet. Check the code on the moderator's screen — this page will join as soon as it's open.`;
       return;
     }
     history.replaceState(null, '', '?join=' + code);
@@ -185,7 +185,7 @@ function renderViewer() {
   } else if (s.phase === 'paused') {
     $('vPuzzle').textContent = ''; $('vBanner').textContent = 'Paused';
   } else if (s.phase === 'closed') {
-    $('vPuzzle').textContent = ''; $('vBanner').textContent = 'The proctor ended this game.';
+    $('vPuzzle').textContent = ''; $('vBanner').textContent = 'The moderator ended this game.';
   } else if (s.phase === 'over') {
     const got = s.results.filter(r => r.got).length;
     $('vPuzzle').textContent = ''; $('vBanner').textContent = `Time! ${team} got ${got}`;
@@ -243,7 +243,7 @@ const showAbout = initAbout({
 });
 initMenu(() => {
   const items = [];
-  if (role === 'proctor') items.push(
+  if (role === 'moderator') items.push(
     ['New game', () => G && G.newGame()],
     ['Reshuffle deck', () => G && G.reshuffle()],
     ['Leave game', leaveGame, 'danger'],
@@ -260,5 +260,5 @@ initMenu(() => {
 // ───────────────────────── START ─────────────────────────
 const joinParam = new URLSearchParams(location.search).get('join');
 if (joinParam) startViewer(joinParam);
-else if (sessionStorage.getItem('mg.code')) startProctor();   // a proctor reloading keeps its room
+else if (sessionStorage.getItem('mg.code')) startModerator();   // a moderator reloading keeps its room
 else show('home');

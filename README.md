@@ -6,15 +6,15 @@ The start page lets you pick a game. Each game lives in its own folder and share
 
 | Folder | Game | Devices |
 | --- | --- | --- |
-| `madgab/` | Mad Gab | 2 or more: a proctor and one or more viewers |
+| `madgab/` | Mad Gab | 2 or more: a moderator and one or more viewers |
 | `watch-ya-mouth/` | Watch Ya Mouth | 1, held by the reader |
 | `word-generator/` | Word Generator | 1 |
 
 ## Mad Gab
 
-- **Proctor** — tap *Proctor*. You get a 4-letter room code and a QR code, pick the round length, Easy or Hard cards, and team names, then *Start game*. You see the puzzle and the answer, and tap **Got It** or **Skip**. After each round, *Next round* shows whose turn it is with a single *Start round* button; the settings only change through *New game*.
+- **Moderator** — tap *Moderator*. You get a 4-letter room code and a QR code, pick the round length, Easy or Hard cards, and team names, then *Start game*. You see the puzzle and the answer, and tap **Got It** or **Skip**. After each round, *Next round* shows whose turn it is with a single *Start round* button; the settings only change through *New game*.
 - **Viewer** — scan the QR code, or tap *Viewer* and type the room code. The team sees only the puzzle, the clock and the scores. Answers appear on the viewer only when the round ends.
-- **Menu** — tap *Mad Gab* in the top corner. The proctor gets *New game* (stops any round and sets every team back to 0), *Reshuffle deck* and *Leave game* (the viewer sees that the game ended); a viewer gets *Leave room*; the start page gets *How to play* and *All games*. Every screen also has *About*, which shows the version and card counts.
+- **Menu** — tap *Mad Gab* in the top corner. The moderator gets *New game* (stops any round and sets every team back to 0), *Reshuffle deck* and *Leave game* (the viewer sees that the game ended); a viewer gets *Leave room*; the start page gets *How to play* and *All games*. Every screen also has *About*, which shows the version and card counts.
 - **Demo** — tap *Try a demo* on the start page. It shows one example puzzle (*Olive Yew*), reveals the answer (*I Love You*), then explains the two roles.
 
 Devices sync through a Firebase Realtime Database (project `madgab-b4a1e`); its rules are in `database.rules.json` and deploy with `npx firebase-tools deploy --only database`. Cards come from `madgab/flashcards.txt`, one per line as `puzzle,answer[,easy|hard]`. The level is optional and defaults to hard; answers may contain commas. Old room links (`/?join=CODE`) are forwarded to `madgab/`.
