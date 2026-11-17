@@ -110,8 +110,11 @@ export function hostRoom({ game, state }) {
 // #viewer section (vScores, vClock, vNote, vCard, vBanner, vResultsBox, vResults).
 // show(name) switches between them. Call open(code), or open('') to ask for a code.
 // open(code, true) makes it a scoreboard: the clock and scores, never the card,
-// and the results once a round is over.
-export function viewRoom({ game, show }) {
+// and the results once a round is over. The scoreboard only hides the card: every screen
+// in a room gets the same state.
+// Options: render(state, board) draws a game's own viewer screen instead of the standard one;
+// params names the URL parameters for a viewer and a scoreboard (default join / board).
+export function viewRoom({ game, show, render: custom, params = { view: 'join', board: 'board' } }) {
   const ME = tabId(game);
   let code = '', state = null, unsubs = [], clock = null, board = false;
 
@@ -138,8 +141,8 @@ export function viewRoom({ game, show }) {
         $('joinMsg').textContent = `No game in room ${code} yet. Check the code on the moderator's screen — this page will join as soon as it's open.`;
         return;
       }
-      history.replaceState(null, '', (board ? '?board=' : '?join=') + code);
-      state = s; show('viewer'); render();
+      history.replaceState(null, '', `?${board ? params.board : params.view}=` + code);
+      state = s; show('viewer'); custom ? custom(s, board) : render();
     }, err => { $('joinMsg').textContent = 'Could not reach the game database: ' + err.message; }));
     clearInterval(clock); clock = setInterval(tick, 250);
   }
@@ -172,7 +175,7 @@ export function viewRoom({ game, show }) {
     tick();
   }
   function tick() {
-    if (!state) return;
+    if (!state || custom) return;
     const left = state.phase === 'playing' ? state.endsAt - now() : (state.left || 0);
     $('vClock').textContent = fmt(left);
     $('vClock').classList.toggle('low', state.phase === 'playing' && left <= 10000);

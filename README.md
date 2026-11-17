@@ -8,6 +8,7 @@ The start page lets you pick a game. Each game lives in its own folder and share
 | --- | --- | --- |
 | `madgab/` | Mad Gab | 2 or more: a moderator and one or more viewers |
 | `watch-ya-mouth/` | Watch Ya Mouth | 1, held by the reader |
+| `password/` | Password | 1, or a moderator plus clue-giver and scoreboard screens |
 | `word-generator/` | Word Generator | 1, or a moderator plus any number of viewers |
 
 ## Mad Gab
@@ -22,6 +23,17 @@ Devices sync through rooms in a Firebase Realtime Database (project `madgab-b4a1
 ## Watch Ya Mouth
 
 The reader wears a cheek retractor and reads each phrase out loud; their team has to work out what they're saying. One phone, held by the reader: set the round length and teams, *Start game*, then **Got It** or **Skip** for each phrase. Between rounds the phone goes to the next team's reader. Phrases come from `watch-ya-mouth/phrases.txt`, one per line.
+
+## Password
+
+Two teams of two. Both clue-givers see the secret word; the team shown as **guessing** gets a one-word clue and one guess. Right scores what the word is worth, which starts at 10 and drops a point with every wrong guess; wrong passes the next clue to the other team. At 0 nobody scores it. Teams take turns giving the first clue on each word, and the first to the target score (15–40, default 25) wins.
+
+- **Moderator** — the room code and QR code, team names and target, then each word with its value and whose turn it is. *Got it* scores the word for the guessing team, *Wrong* takes a point off and switches teams, *Skip word* draws another, and *Undo* reverses the last tap. The game is saved, so a reload carries on.
+- **Clue giver** — a read-only copy of the moderator's screen, word included, for the second clue-giver.
+- **Scoreboard** — for the guessers: the points, the scores and a large banner in the guessing team's colour, never the word. Each screen in a room gets the same data; the scoreboard just doesn't show the word.
+- The QR code opens a choice between Clue giver and Scoreboard, so a guesser who scans it doesn't see the word by accident.
+
+Words come from `password/words.txt`: every one-word entry in the Word Generator's lists except movie titles.
 
 ## Word Generator
 

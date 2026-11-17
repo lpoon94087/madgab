@@ -114,3 +114,23 @@ body.wym button.primary { color: #2a0016; }
 /* Word Generator's accent colour */
 body.wg { --accent: #4fd1c5; }
 body.wg button.primary { color: #00201d; }
+
+/* Password: its accent colour, a colour per team, the turn banner and the points the word is worth */
+body.pw { --accent: #a78bfa; --teamA: #ffb547; --teamB: #4cc9f0; }
+body.pw button.primary { color: #1a0f33; }
+.turn { text-align: center; font-weight: 800; font-size: clamp(22px, 6vw, 40px); letter-spacing: 1px;
+  padding: 12px; border-radius: 14px; color: #14121f; text-transform: uppercase; }
+.turn small { display: block; font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; opacity: .8; }
+.turn.t0 { background: var(--teamA); }
+.turn.t1 { background: var(--teamB); }
+.worth { text-align: center; font: 800 clamp(48px, 16vw, 110px)/1 ui-monospace, Menlo, monospace; }
+.worth small { display: block; font: 600 15px system-ui, sans-serif; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; }
+.team.g0 { border-color: var(--teamA); background: color-mix(in srgb, var(--teamA) 22%, var(--panel)); }
+.team.g1 { border-color: var(--teamB); background: color-mix(in srgb, var(--teamB) 22%, var(--panel)); }
+.team .who { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.team.g0 .who { color: var(--teamA); }
+.team.g1 .who { color: var(--teamB); }
+.actions button small { display: block; font-size: 15px; font-weight: 600; opacity: .8; margin-top: 4px; }
+.board .worth { font-size: clamp(80px, 26vw, 200px); }
+.board .turn { font-size: clamp(30px, 8vw, 60px); }
+.board .team b { font-size: clamp(40px, 10vw, 72px); }

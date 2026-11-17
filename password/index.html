@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Password</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body class="pw">
+<header>
+  <h1><button id="btnMenu" class="brand" aria-haspopup="true" aria-expanded="false">Pass<span>word</span> <small>▾</small></button></h1>
+  <div id="menu" class="menu hidden" role="menu"></div>
+  <div class="status" id="status"></div>
+</header>
+
+<div id="about" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="panel">
+    <h2 id="aboutTitle">Pass<span>word</span></h2>
+    <div class="muted" id="aboutVersion"></div>
+    <p id="aboutCards"></p>
+    <p class="muted" style="font-size:15px">Two teams of two. Clue-givers take turns giving one-word clues; the sooner your partner guesses, the more the word is worth.</p>
+    <button class="primary" id="btnAboutClose" style="width:100%">Close</button>
+  </div>
+</div>
+
+<div id="howto" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+  <div class="panel">
+    <h2 id="howTitle">How to <span>play</span></h2>
+    <ol style="padding-left:20px">
+      <li>Two teams, each with a <b>clue-giver</b> and a <b>guesser</b>. Both clue-givers see the secret word; the guessers don't.</li>
+      <li>The team shown as <b>guessing</b> goes: its clue-giver says <b>one word</b> as a clue, and its guesser gets <b>one guess</b>.</li>
+      <li>Right? That team scores what the word is worth. Wrong? The word loses a point and the other team gets the next clue.</li>
+      <li>Each word starts at <b>10 points</b>. If it reaches 0, nobody scores it. Teams take turns giving the first clue on each new word.</li>
+      <li>First team to the target score wins.</li>
+    </ol>
+    <p class="muted" style="font-size:15px">No gestures, no rhymes, no "sounds like", and no part of the word.</p>
+    <button class="primary" id="btnHowClose" style="width:100%">Got it</button>
+  </div>
+</div>
+
+<main>
+  <!-- Choose a screen -->
+  <section id="home" class="hidden">
+    <p class="center banner hidden" id="joinNote" style="font-size:20px"></p>
+    <div class="big-choice three">
+      <button class="primary" id="btnModerator">Moderator<small>Runs the game. Sees the word, taps Got it or Wrong.</small></button>
+      <button id="btnClue">Clue giver<small>Shows the word, the points and whose turn it is. Read-only.</small></button>
+      <button id="btnBoard">Scoreboard<small>For the guessers: points, scores and who's guessing. Never the word.</small></button>
+    </div>
+    <p class="muted center" style="margin-top:24px">One phone is enough: the clue-givers share the Moderator screen. Add a Scoreboard on a TV or tablet facing the guessers.</p>
+    <p class="center"><a class="back" href="../">← All games</a></p>
+  </section>
+
+  <!-- Viewer: join -->
+  <section id="join" class="hidden panel">
+    <label for="joinCode">Room code (shown on the moderator's screen)</label>
+    <div class="row">
+      <input id="joinCode" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="ABCD" style="font-size:28px;letter-spacing:6px;text-transform:uppercase">
+      <button class="primary" id="btnJoin" style="flex:0 0 auto">Join</button>
+    </div>
+    <p class="muted" id="joinMsg"></p>
+  </section>
+
+  <!-- Viewer: clue giver or scoreboard -->
+  <section id="viewer" class="hidden viewer-stage">
+    <div class="scorebar" id="vScores"></div>
+    <div class="turn" id="vTurn"></div>
+    <div class="worth" id="vWorth"></div>
+    <div class="puzzle" id="vWord"></div>
+    <div class="banner" id="vBanner"></div>
+  </section>
+
+  <!-- Moderator: setup -->
+  <section id="setup" class="hidden">
+    <div class="panel center">
+      <div class="muted">Room code</div>
+      <div class="code" id="roomCode">····</div>
+      <p class="muted" id="viewerCount">Waiting for a viewer…</p>
+      <div id="qr"></div>
+    </div>
+    <div class="panel">
+      <div class="row">
+        <div>
+          <label for="optTeamA">Team 1</label>
+          <input id="optTeamA" value="Team A" maxlength="20">
+        </div>
+        <div>
+          <label for="optTeamB">Team 2</label>
+          <input id="optTeamB" value="Team B" maxlength="20">
+        </div>
+        <div>
+          <label for="optTarget">Play to</label>
+          <select id="optTarget">
+            <option value="15">15 points</option>
+            <option value="20">20 points</option>
+            <option value="25" selected>25 points</option>
+            <option value="30">30 points</option>
+            <option value="40">40 points</option>
+          </select>
+        </div>
+      </div>
+      <p class="muted" id="deckInfo" style="font-size:14px"></p>
+      <button class="primary" id="btnStart" style="width:100%">Start game</button>
+    </div>
+  </section>
+
+  <!-- Moderator: a word in play -->
+  <section id="play" class="hidden">
+    <div class="scorebar" id="pScores"></div>
+    <div class="turn" id="pTurn"></div>
+    <div class="worth" id="pWorth"></div>
+    <div class="panel"><div class="puzzle" id="pWord"></div></div>
+    <div class="actions">
+      <button class="bad" id="btnWrong">Wrong</button>
+      <button class="good" id="btnGot">Got it</button>
+    </div>
+    <div class="row">
+      <button id="btnSkip">Skip word</button>
+      <button id="btnUndo">Undo</button>
+    </div>
+  </section>
+
+  <!-- Moderator: the word is done (scored or nobody got it) -->
+  <section id="done" class="hidden viewer-stage">
+    <div class="scorebar" id="dScores"></div>
+    <div class="banner" id="dBanner"></div>
+    <p class="center muted" id="dWord" style="margin:0;font-size:20px"></p>
+    <div class="row" style="justify-content:center">
+      <button class="primary" id="btnNext" style="flex:0 1 360px;padding:22px;font-size:22px">Next word</button>
+    </div>
+    <div class="row" style="justify-content:center"><button id="btnUndo2" style="flex:0 1 200px">Undo</button></div>
+  </section>
+
+  <!-- Moderator: game over -->
+  <section id="over" class="hidden viewer-stage">
+    <div class="scorebar" id="oScores"></div>
+    <div class="banner" id="oBanner" style="font-size:34px"></div>
+    <div class="row" style="justify-content:center">
+      <button class="primary" id="btnAgain" style="flex:0 1 360px;padding:22px;font-size:22px">Play again</button>
+    </div>
+    <div class="row" style="justify-content:center"><button id="btnUndo3" style="flex:0 1 200px">Undo</button></div>
+  </section>
+</main>
+
+<script type="module" src="password.js"></script>
+</body>
+</html>
