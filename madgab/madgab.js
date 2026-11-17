@@ -4,7 +4,7 @@ import { $, esc, fmt, store, lines, keepAwake, initMenu, initAbout, createRounds
 
 // Mad Gab: a proctor device runs the game; viewer devices show the team only the puzzle.
 // They sync through Firebase Realtime Database: rooms/<CODE>/{owner,state,viewers}.
-const VERSION = '1.6', RELEASED = '2026-11-17';
+const VERSION = '1.7', RELEASED = '2026-11-17';
 
 const db = getDatabase(initializeApp({
   apiKey: 'AIzaSyDbzdtJUIyNIsZ1CnxArgwa8G7mfqb1sKQ',
