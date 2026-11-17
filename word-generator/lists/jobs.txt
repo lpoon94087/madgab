@@ -1,0 +1,73 @@
+actor
+architect
+astronaut
+baker
+barber
+bus driver
+butcher
+carpenter
+cashier
+chef
+coach
+construction worker
+dancer
+dentist
+detective
+doctor
+electrician
+farmer
+firefighter
+fisher
+flight attendant
+florist
+gardener
+hairdresser
+janitor
+journalist
+judge
+lawyer
+librarian
+lifeguard
+lumberjack
+magician
+mail carrier
+mechanic
+musician
+nurse
+painter
+paramedic
+pharmacist
+photographer
+pilot
+plumber
+police officer
+professor
+referee
+sailor
+scientist
+sculptor
+singer
+soldier
+surgeon
+tailor
+taxi driver
+teacher
+tour guide
+truck driver
+veterinarian
+waiter
+weather forecaster
+zookeeper
+park ranger
+game show host
+news anchor
+personal trainer
+dog walker
+babysitter
+clown
+ice cream truck driver
+lighthouse keeper
+beekeeper
+DJ
+crossing guard
+chimney sweep

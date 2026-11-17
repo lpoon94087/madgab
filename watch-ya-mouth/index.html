@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Watch Ya Mouth</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body class="wym">
+<header>
+  <h1><button id="btnMenu" class="brand" aria-haspopup="true" aria-expanded="false">Watch Ya <span>Mouth</span> <small>▾</small></button></h1>
+  <div id="menu" class="menu hidden" role="menu"></div>
+</header>
+
+<div id="about" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="panel">
+    <h2 id="aboutTitle">Watch Ya <span>Mouth</span></h2>
+    <div class="muted" id="aboutVersion"></div>
+    <p id="aboutCards"></p>
+    <p class="muted" style="font-size:15px">The reader wears a cheek retractor and reads each phrase out loud; their team has to work out what they're saying. One device, held by the reader.</p>
+    <button class="primary" id="btnAboutClose" style="width:100%">Close</button>
+  </div>
+</div>
+
+<div id="howto" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+  <div class="panel">
+    <h2 id="howTitle">How to <span>play</span></h2>
+    <ol style="padding-left:20px">
+      <li>Each team picks a <b>reader</b>, who puts in the cheek retractor and holds this phone.</li>
+      <li>The reader taps <b>Start round</b> and reads each phrase out loud — no gestures, no spelling.</li>
+      <li>When the team says the phrase, tap <b>Got It</b> for a point. Stuck? Tap <b>Skip</b>.</li>
+      <li>When the clock runs out, pass the phone (and a clean mouthpiece) to the next team.</li>
+    </ol>
+    <p class="muted" style="font-size:15px">Keep the screen turned away from the guessers.</p>
+    <button class="primary" id="btnHowClose" style="width:100%">Got it</button>
+  </div>
+</div>
+
+<main>
+  <!-- Setup -->
+  <section id="setup" class="hidden">
+    <div class="panel">
+      <p style="margin-top:0">Wear the cheek retractor, read the phrase, and get your team to guess it. <a href="#" id="lnkHow">How to play</a></p>
+      <div class="row">
+        <div>
+          <label for="optTime">Round length</label>
+          <select id="optTime">
+            <option value="60">1 minute</option>
+            <option value="90">1½ minutes</option>
+            <option value="120" selected>2 minutes</option>
+            <option value="180">3 minutes</option>
+          </select>
+        </div>
+        <div>
+          <label for="optTeams">Teams (comma separated)</label>
+          <input id="optTeams" value="Team A, Team B">
+        </div>
+      </div>
+      <p class="muted" id="deckInfo" style="font-size:14px"></p>
+      <button class="primary" id="btnStart" style="width:100%">Start game</button>
+    </div>
+    <p class="center"><a class="back" href="../">← All games</a></p>
+  </section>
+
+  <!-- Between rounds -->
+  <section id="ready" class="hidden viewer-stage">
+    <div class="scorebar" id="rScores"></div>
+    <div class="banner" id="rBanner"></div>
+    <p class="center muted" style="margin:0">Pick a reader, put in the mouthpiece, and hand them the phone.</p>
+    <p class="muted center" id="rInfo" style="margin:0"></p>
+    <div class="row" style="justify-content:center">
+      <button class="primary" id="btnStartNext" style="flex:0 1 360px;padding:22px;font-size:22px">Start round</button>
+    </div>
+  </section>
+
+  <!-- Playing: the reader holds the phone -->
+  <section id="play" class="hidden">
+    <div class="scorebar" id="pScores"></div>
+    <div class="clock" id="pClock">2:00</div>
+    <div class="panel">
+      <div class="answer-label">Read this out loud</div>
+      <div class="puzzle hide-on-pause" id="pPhrase"></div>
+    </div>
+    <div class="actions">
+      <button class="bad" id="btnSkip">Skip</button>
+      <button class="good" id="btnGot">Got It</button>
+    </div>
+    <div class="row">
+      <button id="btnPause">Pause</button>
+      <button id="btnEnd">End round</button>
+    </div>
+  </section>
+
+  <!-- Round over -->
+  <section id="over" class="hidden">
+    <div class="scorebar" id="oScores"></div>
+    <div class="banner" id="oBanner"></div>
+    <div class="panel"><ul class="results" id="oResults"></ul></div>
+    <button class="primary" id="btnNext">Next round</button>
+  </section>
+</main>
+
+<script type="module" src="wym.js"></script>
+</body>
+</html>
