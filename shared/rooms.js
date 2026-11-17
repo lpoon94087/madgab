@@ -57,7 +57,7 @@ export function roundState(G, { card, note, result }) {
 }
 
 // ───────────────────────── MODERATOR ─────────────────────────
-// Opens a room and fills the page's #roomCode, #joinLink, #qr, #viewerCount and #status.
+// Opens a room and fills the page's #roomCode, #qr, #viewerCount and #status.
 // state() returns what viewers should see; call send() whenever it changes.
 export function hostRoom({ game, state }) {
   const ME = tabId(game);
@@ -81,7 +81,6 @@ export function hostRoom({ game, state }) {
     code = c; session.set(game + '.code', c);
     $('roomCode').textContent = c;
     const url = location.origin + location.pathname + '?join=' + c;
-    $('joinLink').textContent = url.replace(/^https?:\/\//, ''); $('joinLink').href = url;
     $('qr').innerHTML = '';
     if (window.QRCode) new QRCode($('qr'), { text: url, width: 160, height: 160 });
     onValue(ref(db, `rooms/${c}/viewers`), snap => {
