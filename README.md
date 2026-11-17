@@ -26,7 +26,10 @@ The reader wears a cheek retractor and reads each phrase out loud; their team ha
 
 ## Password
 
-Two teams of two. Both clue-givers see the secret word; the team shown as **guessing** gets a one-word clue and one guess. Right scores what the word is worth, which starts at 10 and drops a point with every wrong guess; wrong passes the next clue to the other team. At 0 nobody scores it. Teams take turns giving the first clue on each word, and the first to the target score (15–40, default 25) wins.
+Two teams of two. Both clue-givers see the secret word; the team shown as **guessing** gets a one-word clue and one guess. Wrong passes the next clue to the other team, and after 10 clues nobody scores the word. Teams take turns giving the first clue on each word. Two kinds of scoring:
+
+- **Classic** — a word is worth 10, less one for every wrong guess; first to the target score (15–40, default 25) wins.
+- **Simple** — every right answer is 1 point. Play 5, 10, 15 or 20 rounds; in each round both teams start one word, so it's even. Most points wins, and it can end in a tie. Skipped words don't count toward the rounds.
 
 - **Moderator** — the room code and QR code, team names and target, then each word with its value and whose turn it is. *Got it* scores the word for the guessing team, *Wrong* takes a point off and switches teams, *Skip word* draws another, and *Undo* reverses the last tap. The game is saved, so a reload carries on.
 - **Clue giver** — a read-only copy of the moderator's screen, word included, for the second clue-giver.

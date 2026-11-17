@@ -31,8 +31,9 @@
       <li>Two teams, each with a <b>clue-giver</b> and a <b>guesser</b>. Both clue-givers see the secret word; the guessers don't.</li>
       <li>The team shown as <b>guessing</b> goes: its clue-giver says <b>one word</b> as a clue, and its guesser gets <b>one guess</b>.</li>
       <li>Right? That team scores what the word is worth. Wrong? The word loses a point and the other team gets the next clue.</li>
-      <li>Each word starts at <b>10 points</b>. If it reaches 0, nobody scores it. Teams take turns giving the first clue on each new word.</li>
-      <li>First team to the target score wins.</li>
+      <li>Teams take turns giving the first clue on each new word. After 10 clues, nobody scores it.</li>
+      <li><b>Classic scoring:</b> each word starts at 10 points and loses one with every clue. First team to the target score wins.</li>
+      <li><b>Simple scoring:</b> every right answer is 1 point. Play a set number of rounds; in each round both teams start one word. Most points wins.</li>
     </ol>
     <p class="muted" style="font-size:15px">No gestures, no rhymes, no "sounds like", and no part of the word.</p>
     <button class="primary" id="btnHowClose" style="width:100%">Got it</button>
@@ -67,6 +68,7 @@
     <div class="scorebar" id="vScores"></div>
     <div class="turn" id="vTurn"></div>
     <div class="worth" id="vWorth"></div>
+    <p class="center muted" id="vProgress" style="margin:0;font-size:18px"></p>
     <div class="puzzle" id="vWord"></div>
     <div class="banner" id="vBanner"></div>
   </section>
@@ -90,6 +92,13 @@
           <input id="optTeamB" value="Team B" maxlength="20">
         </div>
         <div>
+          <label for="optMode">Scoring</label>
+          <select id="optMode">
+            <option value="classic" selected>Classic: play to a score</option>
+            <option value="simple">Simple: 1 point a word</option>
+          </select>
+        </div>
+        <div id="boxTarget">
           <label for="optTarget">Play to</label>
           <select id="optTarget">
             <option value="15">15 points</option>
@@ -97,6 +106,15 @@
             <option value="25" selected>25 points</option>
             <option value="30">30 points</option>
             <option value="40">40 points</option>
+          </select>
+        </div>
+        <div id="boxRounds" class="hidden">
+          <label for="optRounds">Rounds</label>
+          <select id="optRounds">
+            <option value="5">5 rounds (10 words)</option>
+            <option value="10" selected>10 rounds (20 words)</option>
+            <option value="15">15 rounds (30 words)</option>
+            <option value="20">20 rounds (40 words)</option>
           </select>
         </div>
       </div>
@@ -110,6 +128,7 @@
     <div class="scorebar" id="pScores"></div>
     <div class="turn" id="pTurn"></div>
     <div class="worth" id="pWorth"></div>
+    <p class="center muted" id="pProgress" style="margin:0"></p>
     <div class="panel"><div class="puzzle" id="pWord"></div></div>
     <div class="actions">
       <button class="bad" id="btnWrong">Wrong</button>

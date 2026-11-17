@@ -2,12 +2,14 @@ import { $, esc, store, lines, shuffle, keepAwake, initMenu, initAbout, beep } f
 import { hostRoom, viewRoom, savedRoom } from '../shared/rooms.js';
 
 // Password: two teams, each a clue-giver and a guesser. The team that's guessing gets a
-// one-word clue and one guess; right scores what the word is worth (10, less one per clue),
-// wrong passes the next clue to the other team. First to the target score wins.
+// one-word clue and one guess; wrong passes the next clue to the other team, and after
+// MAX_CLUES clues nobody scores the word. Two ways to score:
+//   classic  a word is worth 10, less one per clue; first to the target score wins
+//   simple   a word is worth 1; play a set number of rounds, each team starting one word a round
 // The moderator runs it; viewers are a clue-giver screen (with the word) or a scoreboard
 // (without it), synced through a room (shared/rooms.js).
-const VERSION = '1.0', RELEASED = '2026-11-17';
-const START_VALUE = 10;
+const VERSION = '1.1', RELEASED = '2026-11-17';
+const START_VALUE = 10, MAX_CLUES = 10;
 
 const sections = ['home', 'join', 'viewer', 'setup', 'play', 'done', 'over'];
 let at = 'home', role = null, room = null;
@@ -33,16 +35,32 @@ function scoresHtml(teams, guessing) {
 function turnHtml(teams, guessing) {
   return `${esc(teams[guessing].name)} guessing<small>Their clue-giver gives a one-word clue</small>`;
 }
-const worthHtml = v => `${v}<small>point${v === 1 ? '' : 's'}</small>`;
+// The big number: what the word is worth (classic) or which clue this is (simple).
+const worthHtml = s => s.mode === 'simple'
+  ? `<span class="clue">Clue ${s.clue}</span><small>of ${MAX_CLUES} · 1 point if right</small>`
+  : `${s.value}<small>point${s.value === 1 ? '' : 's'}</small>`;
+const points = s => s.mode === 'simple' ? 1 : s.value;
+const roundOf = s => Math.floor(s.played / 2) + 1;
+// The line under the turn banner: the goal (classic) or how far through the rounds (simple).
+const progressText = s => s.mode === 'simple'
+  ? `Round ${Math.min(roundOf(s), s.rounds)} of ${s.rounds}`
+  : `Play to ${s.target}`;
+// Who won, or a tie (simple scoring can end level).
+function resultText(s) {
+  const [a, b] = s.teams;
+  if (a.score === b.score) return "It's a tie! 🤝";
+  return `${(a.score > b.score ? a : b).name} wins! 🎉`;
+}
 
 // ───────────── Moderator ─────────────
 let words = [];
 // G is the whole game; it's saved after every change so a reload carries on.
-// phase: setup | word | scored | dead | over
+// phase: setup | word | scored | dead | over. played counts finished words (skips don't count).
 let G = null, history = [];
 const fresh = () => ({
-  phase: 'setup', teams: [{ name: 'Team A', score: 0 }, { name: 'Team B', score: 0 }], target: 25,
-  starter: 0, guessing: 0, value: START_VALUE, word: '', last: null,
+  phase: 'setup', mode: 'classic', teams: [{ name: 'Team A', score: 0 }, { name: 'Team B', score: 0 }],
+  target: 25, rounds: 10, played: 0,
+  starter: 0, guessing: 0, value: START_VALUE, clue: 1, word: '', last: null,
 });
 
 // Deck: a shuffled order of the words, saved so words don't repeat until it runs out.
@@ -57,69 +75,86 @@ function save() { st.set('game', G); if (room) room.send(); render(); }
 function act(fn) { history.push(JSON.stringify(G)); if (history.length > 50) history.shift(); fn(); save(); }
 function undo() { if (!history.length) return; G = JSON.parse(history.pop()); save(); }
 
-function newWord() { G.word = draw(); G.value = START_VALUE; G.guessing = G.starter; G.phase = 'word'; G.last = null; }
+function newWord() { G.word = draw(); G.value = START_VALUE; G.clue = 1; G.guessing = G.starter; G.phase = 'word'; G.last = null; }
+// A word is finished (scored or not): count it, give the next word's first clue to the other
+// team, and end the game if someone reached the target (classic) or the rounds are done (simple).
+function finishWord(phase) {
+  G.played++; G.starter = 1 - G.starter;
+  const over = G.mode === 'simple' ? G.played >= G.rounds * 2 : G.teams.some(t => t.score >= G.target);
+  G.phase = over ? 'over' : phase;
+}
 function got() {
   act(() => {
-    const t = G.teams[G.guessing]; t.score += G.value;
-    G.last = { team: G.guessing, points: G.value, word: G.word };
-    G.phase = t.score >= G.target ? 'over' : 'scored';
-    G.starter = 1 - G.starter;
-    beep(1046, .12);
+    const p = points(G); G.teams[G.guessing].score += p;
+    G.last = { team: G.guessing, points: p, word: G.word };
+    finishWord('scored'); beep(1046, .12);
   });
 }
 function wrong() {
   act(() => {
-    G.value--;
-    if (G.value <= 0) { G.last = { team: null, points: 0, word: G.word }; G.phase = 'dead'; G.starter = 1 - G.starter; beep(220, .4, .25); }
+    G.value--; G.clue++;
+    if (G.clue > MAX_CLUES) { G.last = { team: null, points: 0, word: G.word }; finishWord('dead'); beep(220, .4, .25); }
     else G.guessing = 1 - G.guessing;
   });
 }
-function skip() { act(() => { G.word = draw(); G.value = START_VALUE; G.guessing = G.starter; }); }
+function skip() { act(() => { G.word = draw(); G.value = START_VALUE; G.clue = 1; G.guessing = G.starter; }); }
 
 function startGame() {
   act(() => {
     const a = $('optTeamA').value.trim() || 'Team A', b = $('optTeamB').value.trim() || 'Team B';
     G.teams = [{ name: a, score: 0 }, { name: b, score: 0 }];
-    G.target = Number($('optTarget').value); G.starter = 0;
-    st.set('setup', { a, b, target: G.target });
+    G.mode = $('optMode').value; G.target = Number($('optTarget').value); G.rounds = Number($('optRounds').value);
+    G.starter = 0; G.played = 0;
+    st.set('setup', { a, b, mode: G.mode, target: G.target, rounds: G.rounds });
     newWord();
   });
   keepAwake();
 }
-function playAgain() { act(() => { G.teams.forEach(t => t.score = 0); G.starter = 0; newWord(); }); }
+function playAgain() { act(() => { G.teams.forEach(t => t.score = 0); G.starter = 0; G.played = 0; newWord(); }); }
 function newGame() {
   if (!confirm('Start a new game? Both teams go back to 0.')) return;
-  act(() => { const k = G; G = fresh(); G.teams = k.teams.map(t => ({ name: t.name, score: 0 })); G.target = k.target; });
+  act(() => {
+    const k = G; G = fresh();
+    G.teams = k.teams.map(t => ({ name: t.name, score: 0 })); G.mode = k.mode; G.target = k.target; G.rounds = k.rounds;
+  });
 }
 
 function render() {
   if (role !== 'moderator') return;
   const { teams, guessing } = G;
   ['pScores', 'dScores', 'oScores'].forEach(id => $(id).innerHTML = scoresHtml(teams, G.phase === 'word' ? guessing : -1));
-  $('deckInfo').textContent = `${words.length.toLocaleString()} words; ${deckLeft().toLocaleString()} left before they repeat. Each word starts at ${START_VALUE} points.`;
+  const simple = $('optMode').value === 'simple';
+  $('boxTarget').classList.toggle('hidden', simple); $('boxRounds').classList.toggle('hidden', !simple);
+  $('deckInfo').textContent = (simple
+    ? `Each right answer scores 1. In every round both teams start one word, so ${$('optRounds').value} rounds is ${$('optRounds').value * 2} words.`
+    : `Each word starts at ${START_VALUE} points and loses one with every wrong guess.`)
+    + ` ${words.length.toLocaleString()} words; ${deckLeft().toLocaleString()} left before they repeat.`;
   for (const id of ['btnUndo', 'btnUndo2', 'btnUndo3']) $(id).disabled = !history.length;
   if (G.phase === 'setup') return show('setup');
   if (G.phase === 'word') {
     $('pTurn').className = 'turn t' + guessing; $('pTurn').innerHTML = turnHtml(teams, guessing);
-    $('pWorth').innerHTML = worthHtml(G.value);
+    $('pWorth').innerHTML = worthHtml(G);
+    $('pProgress').textContent = progressText(G);
     $('pWord').textContent = G.word;
-    $('btnGot').innerHTML = `Got it<small>${esc(teams[guessing].name)} +${G.value}</small>`;
-    $('btnWrong').innerHTML = `Wrong<small>${G.value > 1 ? 'pass to ' + esc(teams[1 - guessing].name) : 'nobody scores'}</small>`;
+    $('btnGot').innerHTML = `Got it<small>${esc(teams[guessing].name)} +${points(G)}</small>`;
+    $('btnWrong').innerHTML = `Wrong<small>${G.clue < MAX_CLUES ? 'pass to ' + esc(teams[1 - guessing].name) : 'nobody scores'}</small>`;
     return show('play');
   }
   if (G.phase === 'over') {
-    $('oBanner').textContent = `${teams[G.last.team].name} wins! 🎉`;
+    $('oBanner').textContent = resultText(G);
     return show('over');
   }
   const L = G.last;
   $('dBanner').textContent = L.team === null ? 'Nobody got it' : `${teams[L.team].name} +${L.points}`;
-  $('dWord').innerHTML = `The word was <b>${esc(L.word)}</b> · ${esc(teams[G.starter].name)} gives the first clue next`;
+  $('dWord').innerHTML = `The word was <b>${esc(L.word)}</b> · ${esc(teams[G.starter].name)} gives the first clue next`
+    + (G.mode === 'simple' ? `<br>${esc(progressText(G))}` : '');
   show('done');
 }
 
 // What viewers get. Every screen in the room gets the same state; the scoreboard just doesn't show the word.
 function viewState() {
-  const s = { phase: G.phase, teams: G.teams, guessing: G.guessing, value: G.value, target: G.target };
+  const s = { phase: G.phase, mode: G.mode, teams: G.teams, guessing: G.guessing, value: G.value, clue: G.clue,
+    target: G.target, rounds: G.rounds, played: G.played };
   if (G.phase === 'word') s.word = G.word;
   if (G.last) s.last = G.last;
   if (G.phase !== 'setup') s.starter = G.starter;
@@ -137,17 +172,23 @@ async function startModerator() {
   if (role) return;
   role = 'moderator'; show('setup');
   const s = st.get('setup', null);
-  if (s) { $('optTeamA').value = s.a; $('optTeamB').value = s.b; $('optTarget').value = String(s.target); }
+  if (s) {
+    $('optTeamA').value = s.a; $('optTeamB').value = s.b; $('optTarget').value = String(s.target);
+    $('optMode').value = s.mode || 'classic'; $('optRounds').value = String(s.rounds || 10);
+  }
   try { words = await lines('words.txt'); } catch {
     $('deckInfo').textContent = 'Could not load words.txt — open this page from a web server, not as a local file.';
     $('btnStart').disabled = true; return;
   }
-  G = st.get('game', null) || fresh();
+  // A game saved by version 1.0 has no mode, clue or played: fill them in.
+  const saved = st.get('game', null);
+  G = saved ? { ...fresh(), clue: START_VALUE - (saved.value ?? START_VALUE) + 1, ...saved } : fresh();
   room = hostRoom({ game: 'pw', state: viewState });
   render();
 }
 
 $('btnStart').onclick = startGame;
+$('optMode').onchange = $('optRounds').onchange = () => render();
 $('btnGot').onclick = got;
 $('btnWrong').onclick = wrong;
 $('btnSkip').onclick = skip;
@@ -163,16 +204,17 @@ function renderView(s, board) {
   $('vScores').innerHTML = teams.length ? scoresHtml(teams, playing ? s.guessing : -1) : '';
   $('vTurn').className = playing ? 'turn t' + s.guessing : 'hidden';
   $('vTurn').innerHTML = playing ? turnHtml(teams, s.guessing) : '';
-  $('vWorth').innerHTML = playing ? worthHtml(s.value) : '';
+  $('vWorth').innerHTML = playing ? worthHtml(s) : '';
+  $('vProgress').textContent = s.teams && s.phase !== 'closed' && s.phase !== 'setup' && s.phase !== 'over' ? progressText(s) : '';
   $('vWord').textContent = playing && !board ? s.word : '';
   const L = s.last;
   $('vBanner').innerHTML =
     s.phase === 'closed' ? 'The moderator ended this game.' :
     s.phase === 'setup' ? 'Waiting for the moderator…' :
-    s.phase === 'over' ? `${esc(teams[L.team].name)} wins! 🎉<div class="muted" style="font-size:18px;font-weight:400">The last word was <b>${esc(L.word)}</b></div>` :
+    s.phase === 'over' ? `${esc(resultText(s))}<div class="muted" style="font-size:18px;font-weight:400">The last word was <b>${esc(L.word)}</b></div>` :
     s.phase === 'scored' ? `${esc(teams[L.team].name)} +${L.points}<div class="muted" style="font-size:18px;font-weight:400">The word was <b>${esc(L.word)}</b></div>` :
     s.phase === 'dead' ? `Nobody got it<div class="muted" style="font-size:18px;font-weight:400">The word was <b>${esc(L.word)}</b></div>` :
-    board ? `Play to ${s.target}` : '';
+    '';
 }
 const viewer = viewRoom({ game: 'pw', show, render: renderView, params: { view: 'clue', board: 'board' } });
 function startViewer(code, board) { role = 'viewer'; viewer.open(code, board); }

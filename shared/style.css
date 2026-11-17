@@ -131,6 +131,7 @@ body.pw button.primary { color: #1a0f33; }
 .team.g0 .who { color: var(--teamA); }
 .team.g1 .who { color: var(--teamB); }
 .actions button small { display: block; font-size: 15px; font-weight: 600; opacity: .8; margin-top: 4px; }
+.worth .clue { font-size: .55em; }
 .board .worth { font-size: clamp(80px, 26vw, 200px); }
 .board .turn { font-size: clamp(30px, 8vw, 60px); }
 .board .team b { font-size: clamp(40px, 10vw, 72px); }
