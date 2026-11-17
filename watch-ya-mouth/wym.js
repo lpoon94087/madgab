@@ -1,7 +1,7 @@
 import { $, lines, initMenu, initAbout, createRounds } from '../shared/common.js';
 
 // Watch Ya Mouth: one device, held by the reader. Phrases come from phrases.txt, one per line.
-const VERSION = '1.3', RELEASED = '2026-11-17';
+const VERSION = '1.4', RELEASED = '2026-11-17';
 
 const sections = ['setup', 'ready', 'play', 'over'];
 const show = name => sections.forEach(s => $(s).classList.toggle('hidden', s !== name));
