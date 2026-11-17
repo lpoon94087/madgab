@@ -14,10 +14,8 @@ The Little Mermaid
 Beauty and the Beast
 Aladdin
 Moana
-Up
 Inside Out
 Coco
-Cars
 Monsters, Inc.
 The Incredibles
 Ratatouille
@@ -47,7 +45,6 @@ Willy Wonka and the Chocolate Factory
 The Parent Trap
 Night at the Museum
 Jumanji
-Hook
 Pirates of the Caribbean
 Indiana Jones
 The Lord of the Rings
@@ -64,13 +61,10 @@ Lady and the Tramp
 Mulan
 Tangled
 Encanto
-Brave
 Paddington
 Matilda
 The Goonies
 Free Willy
-Babe
-Elf
 The Polar Express
 How the Grinch Stole Christmas
 The Nightmare Before Christmas
@@ -79,9 +73,7 @@ Space Jam
 The Lego Movie
 Minions
 Trolls
-Sing
 The Secret Life of Pets
-Big
 Mrs. Doubtfire
 Forrest Gump
 Top Gun
@@ -97,3 +89,238 @@ Lilo & Stitch
 Hercules
 Pinocchio
 Fantasia
+Toy Story 2
+Toy Story 3
+A Bug's Life
+Finding Dory
+Monsters University
+Incredibles 2
+Inside Out 2
+Luca
+Turning Red
+Elemental
+Onward
+The Good Dinosaur
+How to Train Your Dragon
+Shrek 2
+Puss in Boots
+Megamind
+Wreck-It Ralph
+Big Hero 6
+Frozen II
+Raya and the Last Dragon
+The Princess and the Frog
+Chicken Run
+Wallace and Gromit
+Coraline
+Hotel Transylvania
+Cloudy with a Chance of Meatballs
+The Croods
+Rio
+Ferdinand
+Boss Baby
+Spirited Away
+My Neighbor Totoro
+Spider-Man: Into the Spider-Verse
+The Super Mario Bros. Movie
+Sonic the Hedgehog
+Detective Pikachu
+Paddington 2
+Mean Girls
+Legally Blonde
+Clueless
+Napoleon Dynamite
+School of Rock
+Freaky Friday
+The Devil Wears Prada
+13 Going on 30
+The Princess Diaries
+Bring It On
+Pitch Perfect
+High School Musical
+Hairspray
+Mamma Mia!
+La La Land
+The Greatest Showman
+Bohemian Rhapsody
+Rocketman
+Elvis
+A Star Is Born
+Barbie
+Oppenheimer
+Everything Everywhere All at Once
+Top Gun: Maverick
+Avatar
+Avatar: The Way of Water
+Interstellar
+Inception
+The Dark Knight
+Gravity
+The Martian
+Life of Pi
+Slumdog Millionaire
+Gladiator
+Braveheart
+Saving Private Ryan
+The Shawshank Redemption
+The Green Mile
+Good Will Hunting
+The Sixth Sense
+Cast Away
+Catch Me If You Can
+The Terminal
+Apollo 13
+Jerry Maguire
+As Good as It Gets
+The Truman Show
+Men in Black
+Independence Day
+Armageddon
+The Matrix
+Fight Club
+Pulp Fiction
+Goodfellas
+The Godfather
+Jurassic World
+Mission: Impossible
+Ocean's Eleven
+The Bourne Identity
+Casino Royale
+Skyfall
+Fast & Furious
+Transformers
+Pirates of the Caribbean: The Curse of the Black Pearl
+The Lord of the Rings: The Return of the King
+Harry Potter and the Sorcerer's Stone
+The Hunger Games
+Twilight
+The Chronicles of Narnia
+Charlie and the Chocolate Factory
+Willy Wonka
+Wonka
+Alice in Wonderland
+Maleficent
+The Jungle Cruise
+Enchanted
+Aquaman
+Guardians of the Galaxy
+Captain America
+Captain Marvel
+Thor
+Doctor Strange
+Ant-Man
+Black Widow
+Avengers: Endgame
+Avengers: Infinity War
+Spider-Man: No Way Home
+Deadpool
+Wolverine
+X-Men
+The Batman
+Man of Steel
+Wonder Woman 1984
+Shazam!
+Pixels
+Jumanji: Welcome to the Jungle
+Free Guy
+Ready Player One
+Real Steel
+Edge of Tomorrow
+Minority Report
+War of the Worlds
+I Am Legend
+Hancock
+Bad Boys
+Rush Hour
+Kung Fu Hustle
+Crouching Tiger, Hidden Dragon
+Parasite
+Crazy Rich Asians
+The Farewell
+Minari
+Black Swan
+The Social Network
+The King's Speech
+Argo
+Spotlight
+Moonlight
+The Shape of Water
+Green Book
+Nomadland
+CODA
+The Fabelmans
+Lincoln
+Hidden Figures
+Ford v Ferrari
+Moneyball
+The Blind Side
+Remember the Titans
+Coach Carter
+Miracle
+Rudy
+The Sandlot
+Space Jam: A New Legacy
+Little Women
+Pride and Prejudice
+Sense and Sensibility
+Emma
+The Notebook
+Pretty Woman
+Sleepless in Seattle
+You've Got Mail
+Notting Hill
+Love Actually
+The Holiday
+The Grinch
+Home Alone 2
+A Christmas Story
+Jingle All the Way
+Christmas Vacation
+Klaus
+The Santa Clause
+Ghostbusters: Afterlife
+Beetlejuice
+Edward Scissorhands
+Casper
+Scooby-Doo
+Stuart Little 2
+Garfield
+Alvin and the Chipmunks
+Marley & Me
+Hachi
+A Dog's Purpose
+Beethoven
+Homeward Bound
+Air Bud
+The Lion King 2
+Tarzan
+Pocahontas
+The Hunchback of Notre Dame
+Atlantis
+Treasure Planet
+Bee Movie
+Shark Tale
+Over the Hedge
+Open Season
+Chicken Little
+Ice Age: The Meltdown
+Surf's Up
+Despicable Me 2
+Kung Fu Panda 2
+Madagascar: Escape 2 Africa
+The Lego Batman Movie
+Zootopia 2
+Moana 2
+Wicked
+Mufasa
+The Mitchells vs. the Machines
+Nimona
+The Wild Robot
+Kung Fu Panda 4
+Despicable Me 4
+Puss in Boots: The Last Wish
+Spider-Man: Across the Spider-Verse
+Teenage Mutant Ninja Turtles
+Shrek the Third
+Dune
+Joker

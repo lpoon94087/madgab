@@ -71,3 +71,134 @@ beekeeper
 DJ
 crossing guard
 chimney sweep
+acrobat
+admiral
+announcer
+archer
+astronomer
+auctioneer
+aviator
+ballerina
+bartender
+beautician
+bellhop
+blacksmith
+bodyguard
+bouncer
+bricklayer
+butler
+caddie
+cameraman
+captain
+cartoonist
+cellist
+chauffeur
+cheerleader
+cobbler
+comedian
+conductor
+copilot
+cowboy
+designer
+diver
+doorman
+drummer
+engineer
+explorer
+exterminator
+gondolier
+golfer
+guard
+guitarist
+gymnast
+handyman
+harpist
+hostess
+housekeeper
+hypnotist
+inventor
+jockey
+juggler
+knight
+landscaper
+lecturer
+locksmith
+matador
+miner
+monk
+nun
+pianist
+paperboy
+priest
+prospector
+puppeteer
+quarterback
+rancher
+ranger
+rapper
+ringmaster
+sergeant
+shepherd
+sheriff
+shopkeeper
+skydiver
+sportscaster
+stagehand
+stonemason
+trucker
+typist
+umpire
+usher
+violinist
+welder
+wrestler
+weightlifter
+accountant
+air traffic controller
+animator
+app developer
+bank teller
+barista
+bounty hunter
+bulldozer driver
+bus boy
+car salesman
+chemist
+coal miner
+computer programmer
+crane operator
+deep sea diver
+delivery driver
+dog groomer
+fashion designer
+forklift driver
+garbage collector
+hotel manager
+ice skater
+interior designer
+lab technician
+mapmaker
+marine biologist
+movie director
+nanny
+opera singer
+optometrist
+orthodontist
+pizza delivery driver
+race car driver
+real estate agent
+rodeo clown
+school principal
+security guard
+ski instructor
+stunt double
+swim coach
+tattoo artist
+tennis player
+ticket taker
+travel agent
+tree trimmer
+window washer
+yoga teacher
+youtuber
+zoologist

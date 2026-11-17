@@ -82,3 +82,174 @@ London
 Rome
 Venice
 the White House
+alley
+amphitheater
+apartment
+aqueduct
+arcade
+attic
+balcony
+barn
+barnyard
+bathroom
+bayou
+bazaar
+bedroom
+boardwalk
+bookstore
+bridge
+bungalow
+cabin
+campsite
+canal
+canyon
+cathedral
+cavern
+cemetery
+chalet
+chateau
+cliff
+coast
+coliseum
+cottage
+courthouse
+courtyard
+cove
+creek
+crosswalk
+dam
+dungeon
+embassy
+factory
+fairground
+farmhouse
+firehouse
+fjord
+foothill
+fort
+fountain
+freeway
+garage
+garden
+gazebo
+glacier
+greenhouse
+hangar
+heliport
+hill
+hut
+igloo
+inn
+jail
+kitchen
+laboratory
+lagoon
+lake
+mansion
+marina
+marsh
+maze
+meadow
+minaret
+moat
+monastery
+monument
+mosque
+motel
+mountain
+newsstand
+nursery
+oasis
+observatory
+ocean
+orchard
+outhouse
+overpass
+pagoda
+palace
+pavilion
+peninsula
+pier
+pizzeria
+planetarium
+pond
+porch
+prairie
+pueblo
+racetrack
+railroad
+ranch
+ravine
+reef
+rink
+river
+runway
+saloon
+sandbar
+sauna
+savanna
+sewer
+shed
+shipyard
+sidewalk
+silo
+skyscraper
+stable
+swamp
+synagogue
+temple
+tent
+tollbooth
+tomb
+tower
+tunnel
+vineyard
+wigwam
+windmill
+yurt
+car wash
+drive-in
+ice cream shop
+nail salon
+hair salon
+flower shop
+pet groomer
+dog park
+skate park
+botanical garden
+science museum
+fast food restaurant
+food truck
+farmers market
+golf course
+baseball field
+football stadium
+ski resort
+cruise ship
+log cabin
+beach house
+trailer park
+parking lot
+toll road
+rest stop
+haunted castle
+secret garden
+treasure island
+desert island
+the Eiffel Tower
+the Statue of Liberty
+the Great Wall of China
+Big Ben
+the Golden Gate Bridge
+Disneyland
+Hollywood
+Times Square
+the Leaning Tower of Pisa
+Stonehenge
+the Taj Mahal
+Machu Picchu
+the Colosseum
+Mount Rushmore
+Yellowstone
+the South Pole
+the Arctic

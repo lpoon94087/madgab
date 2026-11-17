@@ -69,3 +69,140 @@ spice rack
 rolling pin
 welcome mat
 bunk bed
+bathrobe
+bed
+blender
+bookcase
+bucket
+cabinet
+candle
+chair
+clock
+clothesline
+clothespin
+colander
+crib
+cushion
+desk
+doorbell
+drawer
+dryer
+duvet
+faucet
+footstool
+fork
+fridge
+futon
+grater
+griddle
+hairbrush
+hamper
+keyhole
+ladle
+laptop
+mattress
+mousetrap
+napkin
+oven
+pan
+pillowcase
+plate
+pot
+potholder
+quilt
+radiator
+saucepan
+scissors
+shower
+skillet
+spatula
+spoon
+sprinkler
+stapler
+stool
+strainer
+teapot
+thermos
+toolbox
+wastebasket
+whisk
+wok
+baby monitor
+bath mat
+bean bag
+bed frame
+bottle opener
+bread box
+broom closet
+butter knife
+cereal bowl
+coffee mug
+coffee table
+cookie jar
+dining table
+dish rack
+dish soap
+dust pan
+egg timer
+fly swatter
+food processor
+garden hose
+ice cube tray
+kitchen sink
+lawn mower
+light bulb
+lunch box
+measuring cup
+mixing bowl
+paper towel
+pepper grinder
+piggy bank
+pizza cutter
+place mat
+plastic wrap
+rain boots
+rocking chair
+shoe rack
+slow cooker
+soap dish
+step stool
+sticky note
+tape measure
+tea kettle
+tissue box
+toaster oven
+toilet paper
+tool shed
+toothpaste
+umbrella stand
+wall clock
+water bottle
+window screen
+wine glass
+wooden spoon
+alarm system
+bath toys
+bedside table
+bookend
+ceiling light
+charging cable
+closet
+coat rack
+dog bed
+door stop
+fridge magnet
+front door
+garage door
+houseplant
+key ring
+laundry room
+mail slot
+nightstand
+ottoman
+pantry
+photo album
+porch swing
+shoe horn
+spare key
+wallpaper
+wind chime

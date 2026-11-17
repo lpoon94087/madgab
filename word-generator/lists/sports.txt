@@ -72,3 +72,136 @@ baking
 magic tricks
 hula hooping
 kite flying
+acrobatics
+aerobics
+backstroke
+billiards
+bingo
+boating
+bodybuilding
+calisthenics
+croquet
+curling
+dancing
+hopscotch
+jogging
+judo
+karaoke
+pinball
+rodeo
+skating
+leapfrog
+tug of war
+jump rope
+hula hoop
+hide and seek
+tag
+freeze tag
+duck duck goose
+red rover
+four square
+tetherball
+kickball
+capture the flag
+cornhole
+horseshoes
+bocce
+shuffleboard
+air hockey
+foosball
+table tennis
+beach volleyball
+ice hockey
+field hockey
+polo
+cricket
+squash
+racquetball
+pickleball
+handball
+ultimate frisbee
+disc golf
+bobsled
+luge
+speed skating
+ski jumping
+biathlon
+triathlon
+pole vault
+high jump
+long jump
+hurdles
+relay race
+shot put
+javelin
+discus
+sprinting
+mountain biking
+BMX
+motocross
+drag racing
+go-karts
+paddleboarding
+windsurfing
+kitesurfing
+wakeboarding
+rafting
+tubing
+fly fishing
+deep sea fishing
+bungee jumping
+hang gliding
+paragliding
+zip lining
+parkour
+breakdancing
+ballroom dancing
+line dancing
+salsa dancing
+tap dancing
+cheer stunts
+baton twirling
+jumping jacks
+push-ups
+sit-ups
+pilates
+kickboxing
+taekwondo
+kung fu
+jiu-jitsu
+tai chi
+meditation
+bird feeding
+stargazing
+geocaching
+metal detecting
+coin collecting
+stamp collecting
+model trains
+building models
+board games
+card games
+crossword puzzles
+sudoku
+Rubik's cube
+crocheting
+sewing
+quilting
+embroidery
+woodworking
+candle making
+soap making
+calligraphy
+drawing
+sketching
+watercolor painting
+sculpting
+playing guitar
+playing piano
+playing drums
+singing in a choir
+bowling league
+fantasy football
+esports
+chess club
+book club

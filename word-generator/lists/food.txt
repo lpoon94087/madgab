@@ -96,3 +96,120 @@ caramel apple
 birthday cake
 bubble tea
 pot pie
+almond
+anchovy
+apple
+apricot
+artichoke
+asparagus
+banana
+barbecue
+bean
+beet
+blackberry
+blueberry
+bonbon
+bratwurst
+bread
+bun
+cabbage
+candy
+cantaloupe
+carrot
+cashew
+casserole
+cauliflower
+caviar
+celery
+cheese
+cherry
+chestnut
+chicken
+chocolate
+cinnamon
+coffee
+cookie
+corn
+cracker
+cranberry
+cucumber
+dough
+drumstick
+eclair
+eggplant
+espresso
+fondue
+fries
+fruit
+garlic
+grape
+grapefruit
+ham
+hamburger
+jawbreaker
+jelly
+kiwi
+leek
+lemon
+lollipop
+lychee
+marshmallow
+meatloaf
+melon
+milk
+muffin
+mushroom
+mussel
+noodle
+nut
+olive
+onion
+orange
+pea
+peach
+peanut
+pear
+pie
+plum
+potato
+pudding
+pumpkin
+quiche
+radish
+raisin
+raspberry
+rice
+salad
+salami
+sandwich
+sardine
+scone
+soup
+spaghetti
+spinach
+strawberry
+sundae
+tomato
+tuna
+zucchini
+mac and cheese
+chicken nuggets
+fish sticks
+ice cream sandwich
+bacon and eggs
+breakfast burrito
+sushi roll
+dim sum
+curry
+meatball sub
+potato chips
+hamburger bun
+cheese pizza
+pepperoni
+baked potato
+sweet potato
+watermelon slice
+root beer float
+gummy bears
+candy bar
+chocolate milk
