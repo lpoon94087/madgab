@@ -3,7 +3,7 @@ import { $, store, lines, keepAwake, initMenu, initAbout, createRounds } from '.
 // Word Generator: words for Charades, Pictionary, Password and the like, on one device.
 // The lists are lists/<id>.txt (one word per line), described by lists.json.
 // "Just words" hands out one word at a time; timed rounds use the shared round engine.
-const VERSION = '1.0', RELEASED = '2026-11-17';
+const VERSION = '1.1', RELEASED = '2026-11-17';
 
 const sections = ['setup', 'free', 'ready', 'play', 'over'];
 const show = name => sections.forEach(s => $(s).classList.toggle('hidden', s !== name));

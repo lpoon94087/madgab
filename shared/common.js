@@ -144,9 +144,9 @@ export function createRounds(o) {
     }
     const card = cards[G.deck.splice(at, 1)[0]]; saveDeck(); return card;
   }
-  function putBack() {   // the unanswered card goes back on top
-    if (G.card) { G.deck.unshift(cards.indexOf(G.card)); saveDeck(); G.card = null; }
-  }
+  // The card on screen when a round ends has been seen, so it never goes back in the deck
+  // (the next team would start with it). endRound lists it as missed; stop() just drops it.
+  function discard() { G.card = null; }
   function updateDeckInfo() {
     const left = G.deck.filter(fits).length, total = cards.filter((_, i) => fits(i)).length;
     const name = o.deckName ? o.deckName() : '';
@@ -194,7 +194,9 @@ export function createRounds(o) {
     changed();
   }
   function endRound() {
-    clearInterval(tick); putBack(); G.phase = 'over'; setPaused(false);
+    clearInterval(tick);
+    if (G.card) G.results.push({ ...G.card, got: false });
+    discard(); G.phase = 'over'; setPaused(false);
     beep(220, .6, .3);
     const got = G.results.filter(r => r.got).length;
     $('oBanner').textContent = `${G.teams[G.current].name}: ${got} point${got === 1 ? '' : 's'} this round`;
@@ -219,7 +221,7 @@ export function createRounds(o) {
     stop(); syncTeams(); G.teams.forEach(t => t.score = 0); G.current = 0; saveScores();
     G.phase = 'setup'; G.results = []; updateDeckInfo(); renderScores(); o.show('setup'); changed();
   }
-  function stop() { clearInterval(tick); putBack(); setPaused(false); }
+  function stop() { clearInterval(tick); discard(); setPaused(false); }
 
   // Wire up the shared controls.
   $('optTime').value = String(st.get('time', 120));
