@@ -56,7 +56,7 @@ nachos
 oatmeal
 omelet
 onion rings
-pad thai
+pad Thai
 pancakes
 peanut butter and jelly
 pickles
