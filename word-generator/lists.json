@@ -1,0 +1,121 @@
+[
+  {
+    "id": "pictionary-easy",
+    "name": "Pictionary: Easy",
+    "group": "Games",
+    "family": "Pictionary",
+    "tip": "Draw it. No letters, numbers or talking."
+  },
+  {
+    "id": "pictionary-medium",
+    "name": "Pictionary: Medium",
+    "group": "Games",
+    "family": "Pictionary",
+    "tip": "Draw it. No letters, numbers or talking."
+  },
+  {
+    "id": "pictionary-hard",
+    "name": "Pictionary: Hard",
+    "group": "Games",
+    "family": "Pictionary",
+    "tip": "Draw it. No letters, numbers or talking."
+  },
+  {
+    "id": "charades-easy",
+    "name": "Charades: Easy",
+    "group": "Games",
+    "family": "Charades",
+    "tip": "Act it out. No talking, no pointing at things in the room."
+  },
+  {
+    "id": "charades-medium",
+    "name": "Charades: Medium",
+    "group": "Games",
+    "family": "Charades",
+    "tip": "Act it out. No talking, no pointing at things in the room."
+  },
+  {
+    "id": "charades-hard",
+    "name": "Charades: Hard",
+    "group": "Games",
+    "family": "Charades",
+    "tip": "Act it out. No talking, no pointing at things in the room."
+  },
+  {
+    "id": "actions",
+    "name": "Actions",
+    "group": "Games",
+    "family": "Charades",
+    "tip": "Act it out. No talking, no pointing at things in the room."
+  },
+  {
+    "id": "password",
+    "name": "Password",
+    "group": "Games",
+    "family": "Password",
+    "tip": "Give one-word clues. No rhymes, no 'sounds like', no parts of the word."
+  },
+  {
+    "id": "describe-it",
+    "name": "Describe It",
+    "group": "Games",
+    "family": "Describe",
+    "tip": "Describe it so your team says it. Don't say any part of the word."
+  },
+  {
+    "id": "animals",
+    "name": "Animals",
+    "group": "Topics",
+    "family": "",
+    "tip": "Draw it, act it or describe it — your choice."
+  },
+  {
+    "id": "food",
+    "name": "Food",
+    "group": "Topics",
+    "family": "",
+    "tip": "Draw it, act it or describe it — your choice."
+  },
+  {
+    "id": "jobs",
+    "name": "Jobs",
+    "group": "Topics",
+    "family": "",
+    "tip": "Draw it, act it or describe it — your choice."
+  },
+  {
+    "id": "places",
+    "name": "Places",
+    "group": "Topics",
+    "family": "",
+    "tip": "Draw it, act it or describe it — your choice."
+  },
+  {
+    "id": "home",
+    "name": "Around the House",
+    "group": "Topics",
+    "family": "",
+    "tip": "Draw it, act it or describe it — your choice."
+  },
+  {
+    "id": "sports",
+    "name": "Sports and Hobbies",
+    "group": "Topics",
+    "family": "",
+    "tip": "Draw it, act it or describe it — your choice."
+  },
+  {
+    "id": "movies",
+    "name": "Movies",
+    "group": "Topics",
+    "family": "",
+    "tip": "Act it, draw it or describe it — no saying words from the title."
+  },
+  {
+    "id": "holidays",
+    "name": "Holidays and Seasons",
+    "group": "Topics",
+    "family": "",
+    "tip": "Draw it, act it or describe it — your choice."
+  }
+]

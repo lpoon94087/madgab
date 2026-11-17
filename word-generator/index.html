@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Word Generator</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body class="wg">
+<header>
+  <h1><button id="btnMenu" class="brand" aria-haspopup="true" aria-expanded="false">Word <span>Generator</span> <small>▾</small></button></h1>
+  <div id="menu" class="menu hidden" role="menu"></div>
+</header>
+
+<div id="about" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="panel">
+    <h2 id="aboutTitle">Word <span>Generator</span></h2>
+    <div class="muted" id="aboutVersion"></div>
+    <p id="aboutCards"></p>
+    <p class="muted" style="font-size:15px">Words for Charades, Pictionary, Password and any other guessing game. One device.</p>
+    <button class="primary" id="btnAboutClose" style="width:100%">Close</button>
+  </div>
+</div>
+
+<div id="howto" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+  <div class="panel">
+    <h2 id="howTitle">How to <span>play</span></h2>
+    <p><b>Just words</b> — pick a list and tap <b>Next word</b> whenever you need one. Words don't repeat until the list runs out.</p>
+    <p><b>Timed rounds</b> — teams take turns. The player up holds the phone, gets their team to guess as many words as they can before the clock runs out, and taps <b>Got It</b> or <b>Skip</b>.</p>
+    <ul style="padding-left:20px;font-size:15px">
+      <li><b>Charades</b> — act it out, no talking.</li>
+      <li><b>Pictionary</b> — draw it, no letters or numbers.</li>
+      <li><b>Password</b> — one-word clues only.</li>
+      <li><b>Describe it</b> — talk around it without saying any part of it.</li>
+    </ul>
+    <button class="primary" id="btnHowClose" style="width:100%">Got it</button>
+  </div>
+</div>
+
+<main>
+  <!-- Setup -->
+  <section id="setup" class="hidden">
+    <div class="panel">
+      <label for="optList">Word list</label>
+      <select id="optList"></select>
+      <p class="muted" id="listTip" style="font-size:14px;margin:8px 0 0"></p>
+      <label style="display:flex;gap:10px;align-items:center;margin:14px 0 0;color:var(--text);font-size:15px">
+        <input type="checkbox" id="optCover" style="width:auto" checked> Cover each new word until it's tapped
+      </label>
+    </div>
+    <button class="primary" id="btnFree" style="width:100%;margin-top:16px;padding:22px;font-size:22px">Just words</button>
+    <div class="panel" style="margin-top:16px">
+      <div class="answer-label" style="text-align:left;margin-bottom:10px">Or play timed rounds</div>
+      <div class="row">
+        <div>
+          <label for="optTime">Round length</label>
+          <select id="optTime">
+            <option value="30">30 seconds</option>
+            <option value="60">1 minute</option>
+            <option value="90">1½ minutes</option>
+            <option value="120" selected>2 minutes</option>
+            <option value="180">3 minutes</option>
+          </select>
+        </div>
+        <div>
+          <label for="optTeams">Teams (comma separated)</label>
+          <input id="optTeams" value="Team A, Team B">
+        </div>
+      </div>
+      <p class="muted" id="deckInfo" style="font-size:14px"></p>
+      <button id="btnStart" style="width:100%">Start timed game</button>
+    </div>
+    <p class="center"><a class="back" href="../">← All games</a></p>
+  </section>
+
+  <!-- Just words -->
+  <section id="free" class="hidden viewer-stage">
+    <div class="answer-label" id="fList"></div>
+    <div class="panel" id="fCard" role="button" tabindex="0" style="cursor:pointer;min-height:220px;display:flex;flex-direction:column;justify-content:center">
+      <div class="puzzle" id="fWord"></div>
+      <p class="center muted" id="fHint" style="margin:0"></p>
+    </div>
+    <p class="center muted" id="fTip" style="margin:0;font-size:15px"></p>
+    <div class="row">
+      <button id="btnFreeBack" style="flex:0 1 140px">Back</button>
+      <button class="primary" id="btnFreeNext" style="padding:22px;font-size:22px">Next word</button>
+    </div>
+    <p class="center muted" id="fLeft" style="margin:0;font-size:14px"></p>
+  </section>
+
+  <!-- Timed: between rounds -->
+  <section id="ready" class="hidden viewer-stage">
+    <div class="scorebar" id="rScores"></div>
+    <div class="banner" id="rBanner"></div>
+    <p class="center muted" style="margin:0">Hand the phone to the player who's up.</p>
+    <p class="muted center" id="rInfo" style="margin:0"></p>
+    <div class="row" style="justify-content:center">
+      <button class="primary" id="btnStartNext" style="flex:0 1 360px;padding:22px;font-size:22px">Start round</button>
+    </div>
+  </section>
+
+  <!-- Timed: playing -->
+  <section id="play" class="hidden">
+    <div class="scorebar" id="pScores"></div>
+    <div class="clock" id="pClock">2:00</div>
+    <div class="panel">
+      <div class="answer-label" id="pList"></div>
+      <div class="puzzle hide-on-pause" id="pWord"></div>
+    </div>
+    <div class="actions">
+      <button class="bad" id="btnSkip">Skip</button>
+      <button class="good" id="btnGot">Got It</button>
+    </div>
+    <div class="row">
+      <button id="btnPause">Pause</button>
+      <button id="btnEnd">End round</button>
+    </div>
+  </section>
+
+  <!-- Timed: round over -->
+  <section id="over" class="hidden">
+    <div class="scorebar" id="oScores"></div>
+    <div class="banner" id="oBanner"></div>
+    <div class="panel"><ul class="results" id="oResults"></ul></div>
+    <button class="primary" id="btnNext">Next round</button>
+  </section>
+</main>
+
+<script type="module" src="wg.js"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+airport
+amusement park
+aquarium
+art museum
+bakery
+bank
+barbershop
+beach
+bowling alley
+bus stop
+campground
+candy store
+castle
+cave
+circus
+classroom
+coffee shop
+desert
+dentist's office
+farm
+fire station
+forest
+gas station
+gym
+haunted house
+hospital
+hotel
+ice rink
+island
+jungle
+laundromat
+library
+lighthouse
+mall
+movie theater
+mountain top
+museum
+North Pole
+ocean floor
+office
+park
+pet store
+pirate ship
+playground
+police station
+post office
+pyramid
+rainforest
+restaurant
+roller rink
+school
+space station
+stadium
+submarine
+subway
+supermarket
+swimming pool
+theater
+toy store
+train station
+tree house
+volcano
+waterfall
+water park
+zoo
+Paris
+New York City
+Hawaii
+Antarctica
+Egypt
+Japan
+Australia
+the Grand Canyon
+Las Vegas
+the moon
+Mars
+the Sahara
+Mount Everest
+Niagara Falls
+the Amazon
+London
+Rome
+Venice
+the White House
