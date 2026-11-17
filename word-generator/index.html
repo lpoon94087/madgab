@@ -35,7 +35,7 @@
       <li><b>Password</b> — one-word clues only.</li>
       <li><b>Describe it</b> — talk around it without saying any part of it.</li>
     </ul>
-    <p><b>More screens</b> — the <b>moderator</b> has every control. Other devices choose <b>Viewer</b> and join with the moderator's room code or QR code. They show the current word, the clock and the scores, but can't change anything.</p>
+    <p><b>More screens</b> — the <b>moderator</b> has every control. Other devices choose <b>Viewer</b> and join with the moderator's room code or QR code. They show the current word, the clock and the scores, but can't change anything. A <b>Scoreboard</b> joins the same way and shows only the clock and scores, so the guessing team can watch it; after each round it lists the words got and missed.</p>
     <button class="primary" id="btnHowClose" style="width:100%">Got it</button>
   </div>
 </div>
@@ -43,11 +43,12 @@
 <main>
   <!-- Choose a role -->
   <section id="home" class="hidden">
-    <div class="big-choice">
+    <div class="big-choice three">
       <button class="primary" id="btnModerator">Moderator<small>Runs the game. Picks the list, taps Next word, Got It or Skip.</small></button>
       <button id="btnViewer">Viewer<small>A read-only screen. Shows the word the moderator is on.</small></button>
+      <button id="btnBoard">Scoreboard<small>Just the clock and scores, never the word. After each round, the words got and missed.</small></button>
     </div>
-    <p class="muted center" style="margin-top:24px">Playing on one phone? Just pick Moderator. To show the words on more screens, open this page on them, choose Viewer and type the room code.</p>
+    <p class="muted center" style="margin-top:24px">Playing on one phone? Just pick Moderator. For more screens, open this page on them, choose Viewer or Scoreboard and type the room code.</p>
     <p class="center"><a class="back" href="../">← All games</a></p>
   </section>
 

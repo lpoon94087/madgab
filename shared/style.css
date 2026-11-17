@@ -81,6 +81,13 @@ label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 6px
 .results .p { color: var(--muted); font-size: 15px; }
 .viewer-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
 .banner { text-align: center; font-size: 26px; font-weight: 700; }
+/* A scoreboard viewer: no card, so the clock and scores fill the screen */
+.board .clock { font-size: clamp(88px, 28vw, 220px); }
+.board .team { min-width: 140px; padding: 12px 20px; font-size: 20px; }
+.board .team b { font-size: clamp(40px, 10vw, 72px); }
+.board #vCard, .board #vNote { display: none; }
+.big-choice.three { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 760px) { .big-choice.three { grid-template-columns: 1fr; } }
 a { color: var(--accent); }
 
 /* Game picker (the site's start page) */

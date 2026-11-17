@@ -110,9 +110,11 @@ export function hostRoom({ game, state }) {
 // A read-only screen. The page needs the #join section (joinCode, btnJoin, joinMsg) and the
 // #viewer section (vScores, vClock, vNote, vCard, vBanner, vResultsBox, vResults).
 // show(name) switches between them. Call open(code), or open('') to ask for a code.
+// open(code, true) makes it a scoreboard: the clock and scores, never the card,
+// and the results once a round is over.
 export function viewRoom({ game, show }) {
   const ME = tabId(game);
-  let code = '', state = null, unsubs = [], clock = null;
+  let code = '', state = null, unsubs = [], clock = null, board = false;
 
   function join(raw) {
     code = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -137,7 +139,7 @@ export function viewRoom({ game, show }) {
         $('joinMsg').textContent = `No game in room ${code} yet. Check the code on the moderator's screen — this page will join as soon as it's open.`;
         return;
       }
-      history.replaceState(null, '', '?join=' + code);
+      history.replaceState(null, '', (board ? '?board=' : '?join=') + code);
       state = s; show('viewer'); render();
     }, err => { $('joinMsg').textContent = 'Could not reach the game database: ' + err.message; }));
     clearInterval(clock); clock = setInterval(tick, 250);
@@ -151,12 +153,13 @@ export function viewRoom({ game, show }) {
     $('vScores').classList.toggle('hidden', !teams.length || s.phase === 'free');
     $('vClock').classList.toggle('hidden', !['setup', 'playing', 'paused'].includes(s.phase));
     $('vResultsBox').classList.toggle('hidden', s.phase !== 'over');
-    const showCard = s.phase === 'playing' || s.phase === 'free';
+    const showCard = !board && (s.phase === 'playing' || s.phase === 'free');
     $('vCard').textContent = showCard ? s.card || '' : '';
     $('vNote').textContent = showCard ? s.note || '' : '';
     const got = results.filter(r => r.got).length;
     const banners = {
-      playing: '', free: '', paused: 'Paused',
+      playing: '', paused: 'Paused',
+      free: board ? 'Playing words with no clock. Scores show in timed rounds.' : '',
       closed: 'The moderator ended this game.',
       over: `Time! ${team} got ${got}`,
     };
@@ -180,6 +183,9 @@ export function viewRoom({ game, show }) {
   $('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') join($('joinCode').value); });
 
   return {
-    open(c) { keepAwake(); if (c) join(c); else { show('join'); $('joinCode').focus(); } },
+    open(c, asBoard = false) {
+      board = asBoard; $('viewer').classList.toggle('board', board); keepAwake();
+      if (c) join(c); else { show('join'); $('joinCode').focus(); }
+    },
   };
 }

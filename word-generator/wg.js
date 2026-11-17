@@ -6,7 +6,7 @@ import { hostRoom, viewRoom, roundState, savedRoom } from '../shared/rooms.js';
 // "Just words" hands out one word at a time; timed rounds use the shared round engine.
 // Like Mad Gab, a device is either the moderator (every control; works on its own too)
 // or a read-only viewer of the moderator's word, synced through a room (shared/rooms.js).
-const VERSION = '1.2', RELEASED = '2026-11-17';
+const VERSION = '1.3', RELEASED = '2026-11-17';
 
 const sections = ['home', 'setup', 'free', 'ready', 'play', 'over', 'join', 'viewer'];
 let at = 'home', room = null, role = null;
@@ -111,8 +111,9 @@ async function leaveGame() {
   location.href = location.pathname;
 }
 const viewer = viewRoom({ game: 'wg', show });
-function startViewer(code) { role = 'viewer'; viewer.open(code); }
+function startViewer(code, board = false) { role = 'viewer'; viewer.open(code, board); }
 $('btnViewer').onclick = () => startViewer('');
+$('btnBoard').onclick = () => startViewer('', true);
 $('btnModerator').onclick = () => startModerator();
 
 // ───────────── Menu / About ─────────────
@@ -133,8 +134,9 @@ initMenu(() => {
 });
 
 // ───────────── Start ─────────────
-const joinParam = new URLSearchParams(location.search).get('join');
-if (joinParam) startViewer(joinParam);
+const params = new URLSearchParams(location.search);
+if (params.get('join')) startViewer(params.get('join'));
+else if (params.get('board')) startViewer(params.get('board'), true);
 else if (savedRoom('wg')) startModerator();   // a moderator reloading keeps its room
 else show('home');
 
