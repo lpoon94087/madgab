@@ -101,11 +101,15 @@ export function initAbout({ version, released, cardsText }) {
 //   info()      optional: extra item for the line under "you're up"
 //   readyText(team)  optional: banner between rounds
 //   onChange(G) optional: called after every change (Mad Gab syncs its viewers here)
+//   tapToStart  optional: id of the card element on the play screen. Start game then opens the
+//               play screen with the clock stopped and the card showing START; tapping the card
+//               starts the round. The page's startCue(on) shows or hides the START card.
+//   startCue(on) required with tapToStart
 export function createRounds(o) {
   const st = store(o.prefix);
   const cards = o.cards, fits = o.fits || (() => true);
   const G = { teams: [], current: 0, roundMs: 120000, phase: 'setup', endsAt: 0, pausedLeft: 0, card: null, results: [], deck: [] };
-  let tick = null, lastBeep = -1;
+  let tick = null, lastBeep = -1, armed = false;
   const changed = () => { if (o.onChange) o.onChange(G); };
 
   // Teams and scores
@@ -156,7 +160,20 @@ export function createRounds(o) {
 
   // Rounds
   function setPaused(p) { document.querySelectorAll('.hide-on-pause').forEach(el => el.style.visibility = p ? 'hidden' : ''); }
+  // The play buttons do nothing until the round is running.
+  function setControls(on) { ['btnGot', 'btnSkip', 'btnPause', 'btnEnd'].forEach(id => $(id).disabled = !on); }
+  // Open the play screen with the clock full and a START card; the round begins when it's tapped.
+  function armRound() {
+    syncTeams(); renderScores();
+    G.roundMs = Number($('optTime').value) * 1000;
+    G.results = []; G.card = null; armed = true; setPaused(false);
+    $('pClock').textContent = fmt(G.roundMs); $('pClock').classList.remove('low');
+    $('btnPause').textContent = 'Pause'; setControls(false);
+    o.startCue(true); o.show('play'); keepAwake(); changed();
+  }
   function startRound() {
+    if (armed) { armed = false; o.startCue(false); }
+    setControls(true);
     syncTeams();
     G.roundMs = Number($('optTime').value) * 1000;
     st.set('time', G.roundMs / 1000);
@@ -221,14 +238,19 @@ export function createRounds(o) {
     stop(); syncTeams(); G.teams.forEach(t => t.score = 0); G.current = 0; saveScores();
     G.phase = 'setup'; G.results = []; updateDeckInfo(); renderScores(); o.show('setup'); changed();
   }
-  function stop() { clearInterval(tick); discard(); setPaused(false); }
+  function stop() { clearInterval(tick); discard(); setPaused(false); if (armed) { armed = false; o.startCue(false); setControls(true); } }
 
   // Wire up the shared controls.
   $('optTime').value = String(st.get('time', 120));
   $('optTeams').value = st.get('teamsText', 'Team A, Team B');
   G.teams = st.get('teams', null) || parseTeams();
   G.current = st.get('current', 0) % G.teams.length;
-  $('btnStart').onclick = startRound;
+  $('btnStart').onclick = o.tapToStart ? armRound : startRound;
+  if (o.tapToStart) {
+    const card = $(o.tapToStart), go = () => { if (armed) startRound(); };
+    card.addEventListener('click', go);
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  }
   $('btnStartNext').onclick = startRound;
   $('btnGot').onclick = () => answer(true);
   $('btnSkip').onclick = () => answer(false);

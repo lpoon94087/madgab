@@ -6,7 +6,7 @@ import { hostRoom, viewRoom, roundState, savedRoom } from '../shared/rooms.js';
 // "Just words" hands out one word at a time; timed rounds use the shared round engine.
 // Like Mad Gab, a device is either the moderator (every control; works on its own too)
 // or a read-only viewer of the moderator's word, synced through a room (shared/rooms.js).
-const VERSION = '1.5', RELEASED = '2026-11-17';
+const VERSION = '1.6', RELEASED = '2026-11-17';
 
 const sections = ['home', 'setup', 'free', 'ready', 'play', 'over', 'join', 'viewer'];
 let at = 'home', room = null, role = null;
@@ -157,6 +157,15 @@ async function startModerator() {
       },
       result: r => [r.word, chosen().size > 1 ? byId.get(r.list).name : ''],
       onChange: () => room && room.send(),
+      // The first round waits on a START card, so the player can get ready before the clock runs.
+      tapToStart: 'pCard',
+      startCue: on => {
+        const card = $('pCard');
+        card.classList.toggle('start-card', on);
+        if (on) card.setAttribute('role', 'button'); else card.removeAttribute('role');
+        card.tabIndex = on ? 0 : -1;
+        if (on) { $('pWord').textContent = 'START'; $('pList').textContent = 'Tap when you\'re ready'; card.focus(); }
+      },
     });
     $('optList').onchange = onListChange;
     onListChange();

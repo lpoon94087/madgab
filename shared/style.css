@@ -86,6 +86,9 @@ label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 6px
 .board .team { min-width: 140px; padding: 12px 20px; font-size: 20px; }
 .board .team b { font-size: clamp(40px, 10vw, 72px); }
 .board #vCard, .board #vNote { display: none; }
+/* The START card that begins a timed round */
+.start-card { cursor: pointer; border: 3px dashed var(--accent); }
+.start-card .puzzle { color: var(--accent); letter-spacing: 6px; }
 .big-choice.three { grid-template-columns: 1fr 1fr 1fr; }
 @media (max-width: 760px) { .big-choice.three { grid-template-columns: 1fr; } }
 a { color: var(--accent); }
