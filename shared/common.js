@@ -46,9 +46,23 @@ export function beep(freq = 880, dur = 0.12, vol = 0.2) {
   } catch {}
 }
 
+// ───────────────────────── RELOAD ─────────────────────────
+// A web app saved to a phone's home screen has no refresh button, and GitHub Pages lets the
+// phone keep each file for 10 minutes. Reload asks the server for fresh copies of the page and
+// every file it loaded, then reloads, so the latest version shows straight away.
+export async function reloadLatest() {
+  if (!confirm('Reload to get the latest version? A round in progress will stop.')) return;
+  const urls = new Set([location.href.split('#')[0]]);
+  for (const r of performance.getEntriesByType('resource'))
+    if (r.name.startsWith(location.origin)) urls.add(r.name);
+  await Promise.all([...urls].map(u => fetch(u, { cache: 'reload' }).catch(() => {})));
+  location.reload();
+}
+
 // ───────────────────────── MENU ─────────────────────────
 // Tapping the game's name (#btnMenu) opens #menu. items() returns [label, fn, className?][]
 // and is called each time, so the menu can depend on what the page is doing.
+// Every menu also gets Reload, just above About (or at the end).
 export function initMenu(items) {
   const btn = $('btnMenu'), m = $('menu');
   const close = () => { m.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
@@ -56,7 +70,9 @@ export function initMenu(items) {
     e.stopPropagation();
     if (!m.classList.contains('hidden')) return close();
     m.innerHTML = '';
-    for (const [label, fn, cls] of items()) {
+    const list = items(), at = list.findIndex(([label]) => label === 'About');
+    list.splice(at < 0 ? list.length : at, 0, ['Reload', reloadLatest]);
+    for (const [label, fn, cls] of list) {
       const b = document.createElement('button');
       b.textContent = label; b.setAttribute('role', 'menuitem'); if (cls) b.className = cls;
       b.onclick = () => { close(); fn(); };
