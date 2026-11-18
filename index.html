@@ -12,7 +12,8 @@
 </head>
 <body>
 <header>
-  <h1>ULP <span>Games</span></h1>
+  <h1><button id="btnMenu" class="brand" aria-haspopup="true" aria-expanded="false">ULP <span>Games</span> <small>▾</small></button></h1>
+  <div id="menu" class="menu hidden" role="menu"></div>
 </header>
 <main>
   <p class="muted" style="margin:0">Pick a game.</p>
@@ -39,5 +40,11 @@
     </a>
   </div>
 </main>
+<script type="module">
+  import { initMenu, reloadLatest } from './shared/common.js';
+  // The start page's menu: Reload gets the latest version of the site (a saved home-screen
+  // web app has no refresh button).
+  initMenu(() => [['Reload', reloadLatest]], { home: false });
+</script>
 </body>
 </html>

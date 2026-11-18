@@ -22,9 +22,8 @@ const showAbout = initAbout({
 initMenu(() => [
   ...(G ? [['New game', G.newGame], ['Reshuffle deck', G.reshuffle]] : []),
   ['How to play', openHow],
-  ['All games', () => { location.href = '../'; }],
   ['About', showAbout],
-]);
+], { leaving: () => G && ['playing', 'paused'].includes(G.phase) ? 'Stop this round and go to the home page?' : '' });
 
 show('setup');
 try {

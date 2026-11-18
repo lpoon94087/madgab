@@ -129,9 +129,8 @@ initMenu(() => {
   );
   else if (role === 'viewer') items.push(['Leave room', () => { location.href = location.pathname; }, 'danger']);
   items.push(['How to play', openHow]);
-  if (!role) items.push(['All games', () => { location.href = '../'; }]);
   return [...items, ['About', showAbout]];
-});
+}, { leaving: () => role === 'viewer' || (role === 'moderator' && at !== 'setup') ? 'Leave this game and go to the home page?' : '' });
 
 // ───────────── Start ─────────────
 const params = new URLSearchParams(location.search);

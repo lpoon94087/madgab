@@ -51,7 +51,7 @@ export function beep(freq = 880, dur = 0.12, vol = 0.2) {
 // phone keep each file for 10 minutes. Reload asks the server for fresh copies of the page and
 // every file it loaded, then reloads, so the latest version shows straight away.
 export async function reloadLatest() {
-  if (!confirm('Reload to get the latest version? A round in progress will stop.')) return;
+  if (!confirm('Reload to get the latest version of ULP Games?')) return;
   const urls = new Set([location.href.split('#')[0]]);
   for (const r of performance.getEntriesByType('resource'))
     if (r.name.startsWith(location.origin)) urls.add(r.name);
@@ -62,8 +62,12 @@ export async function reloadLatest() {
 // ───────────────────────── MENU ─────────────────────────
 // Tapping the game's name (#btnMenu) opens #menu. items() returns [label, fn, className?][]
 // and is called each time, so the menu can depend on what the page is doing.
-// Every menu also gets Reload, just above About (or at the end).
-export function initMenu(items) {
+// Every game's menu also gets Home (the site's start page), just above About or at the end.
+// Options: home: false leaves it out (the start page itself); leaving() returns a question to
+// confirm before going Home, or '' to go straight there (e.g. ask only while a game is running).
+const HOME = new URL('../', import.meta.url).href;
+export function initMenu(items, { home = true, leaving } = {}) {
+  const goHome = () => { const q = leaving && leaving(); if (q && !confirm(q)) return; location.href = HOME; };
   const btn = $('btnMenu'), m = $('menu');
   const close = () => { m.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
   btn.onclick = e => {
@@ -71,7 +75,7 @@ export function initMenu(items) {
     if (!m.classList.contains('hidden')) return close();
     m.innerHTML = '';
     const list = items(), at = list.findIndex(([label]) => label === 'About');
-    list.splice(at < 0 ? list.length : at, 0, ['Reload', reloadLatest]);
+    if (home) list.splice(at < 0 ? list.length : at, 0, ['Home', goHome]);
     for (const [label, fn, cls] of list) {
       const b = document.createElement('button');
       b.textContent = label; b.setAttribute('role', 'menuitem'); if (cls) b.className = cls;

@@ -112,10 +112,9 @@ initMenu(() => {
   else {
     items.push(['How to play', () => $('btnDemo').click()]);
     if ($('home').classList.contains('hidden')) items.push(['Start page', () => show('home')]);
-    items.push(['All games', () => { location.href = '../'; }]);
   }
   return [...items, ['About', showAbout]];
-});
+}, { leaving: () => role ? 'Leave this game and go to the home page?' : '' });
 
 // ───────────────────────── START ─────────────────────────
 const joinParam = new URLSearchParams(location.search).get('join');
