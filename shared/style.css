@@ -4,6 +4,8 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
+/* Fast taps on buttons and cards are taps, not a double-tap zoom. Pinch zoom still works. */
+html, body, button, a, input, select, label, [role="button"], .panel { touch-action: manipulation; }
 body {
   background: var(--bg); color: var(--text);
   font: 17px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
