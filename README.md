@@ -10,7 +10,7 @@ The start page lets you pick a game. Each game lives in its own folder and share
 | `watch-ya-mouth/` | Watch Ya Mouth | 1, held by the reader |
 | `password/` | Password | 1, or a moderator plus clue-giver and scoreboard screens |
 | `word-generator/` | Word Generator | 1, or a moderator plus any number of viewers |
-| `codenames/` | Codenames | 2: the board on a big screen, the spymaster key on a phone |
+| `codenames/` | Codenames | 2+: the board on a big screen, the spymaster key on each spymaster's phone |
 
 ## Mad Gab
 
@@ -54,7 +54,8 @@ Words don't repeat until the chosen lists run out. The lists are `word-generator
 Opens on a choice between **Board** and **Spymaster**.
 
 - **Board** — for a TV or big screen. 25 words dealt from `codenames/words.txt` (one per line). Tap a card to cycle tan → grey (bystander) → red → blue → black (assassin); a few seconds after a card turns, it shows a picture from `codenames/img/` (listed in `codenames/images.json`). Reloading deals a new board, and so does *New board* in the menu. `?addon=WORD,WORD` adds words to the pool; `?demo` turns random cards every second.
-- **Spymaster** — the secret key card: a 5×5 grid with 9 cards for the team that goes first, 8 for the other team, 7 bystanders and 1 assassin (✕). The frame is red or blue for the team that goes first. Both spymasters share one screen, since another device would deal a different key. The key is kept on the device until *New key*, so a reload doesn't lose it.
+- **Spymaster** — the secret key card: a 5×5 grid with 9 cards for the team that goes first, 8 for the other team, 7 bystanders and 1 assassin (✕). The frame is red or blue for the team that goes first. The key is kept on the device until *New key*, so a reload doesn't lose it.
+- **Spymaster rooms** — each spymaster phone is in a room, shown as a 4-letter code in the top right (with how many phones are in it). A phone starts in a room of its own. Tap the code and type the other spymaster's code to join their room; every phone in a room shows the same key, and *New key* on any of them changes it on all of them. A reload goes back to the same room. Offline, the key still works on that phone alone.
 
 The board and the key aren't linked: the spymasters say which cards to turn, as with the boxed game's key cards. The board came from the stand-alone codenames repo, with its default picture set.
 
@@ -67,7 +68,7 @@ After one visit with internet, every game works on one device with no connection
 ## Code
 
 - `shared/common.js` — the round engine (`createRounds`: teams, scores, a shuffled deck saved on the device so cards don't repeat until you reshuffle, the clock, Got It / Skip, results), plus the menu, the About box, beeps and the screen wake lock.
-- `shared/rooms.js` — rooms for games with viewers (Mad Gab, Word Generator): the moderator claims a 4-letter code and sends what viewers should see; the viewer screen joins and shows it read-only. Each room is tagged with its game, so a code from one game can't be joined from another.
+- `shared/rooms.js` — rooms for games with viewers (Mad Gab, Word Generator): the moderator claims a 4-letter code and sends what viewers should see; the viewer screen joins and shows it read-only. `shareRoom` is a room of equal devices that all show and change the same state (Codenames' spymaster key). Each room is tagged with its game, so a code from one game can't be joined from another.
 - `shared/style.css` — styles for every page.
 - `<game>/index.html` and `<game>/<game>.js` — the game's screens and whatever is specific to it (Mad Gab's rooms and viewer, its demo, its Easy/Hard filter).
 

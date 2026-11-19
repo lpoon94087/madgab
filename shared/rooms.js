@@ -1,8 +1,9 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
-import { getDatabase, ref, set, onValue, onDisconnect, runTransaction } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js';
+import { getDatabase, ref, set, get, onValue, onDisconnect, runTransaction } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js';
 import { $, esc, fmt, keepAwake } from './common.js';
 
 // Rooms: one moderator device runs a game, any number of viewer devices show a read-only copy.
+// (Or, with shareRoom below, a room of equal devices that all show and change the same state.)
 // They sync through Firebase Realtime Database: rooms/<CODE>/{owner,state,viewers}
 // (rules in database.rules.json). `game` ('mg', 'wg') keeps each game's rooms apart.
 //
@@ -205,4 +206,72 @@ export function viewRoom({ game, show, render: custom, params = { view: 'join', 
       if (c) join(c); else { show('join'); $('joinCode').focus(); }
     },
   };
+}
+
+// ───────────────────────── SHARED ROOM ─────────────────────────
+// A room where every device is equal: any of them can change the state and all of them see it
+// (Codenames' spymaster key). The page draws its own room button; this only does the syncing.
+//   onState(s)   the room's state whenever it changes (null while the room is empty)
+//   onStatus({ text, on, count })   connection text, whether it's live, devices in the room
+// create(state) opens a new room with a random code; join(code) moves to an existing room
+// and resolves to 'ok', 'empty' (no game there), 'other' (another game's room) or 'bad' (not
+// 4 letters); send(state) changes the state for everyone in the room.
+export function shareRoom({ game, onState, onStatus }) {
+  const ME = tabId(game);
+  let code = null, unsubs = [], live = false, count = 0;
+  const report = text => onStatus({ text, on: live, count, code });
+
+  function watch(c) {
+    unsubs.forEach(u => u()); unsubs = [];
+    code = c; live = false; count = 0;
+    const me = ref(db, `rooms/${c}/viewers/${ME}`);
+    unsubs.push(onValue(ref(db, '.info/connected'), x => {
+      live = !!x.val();
+      if (live) { onDisconnect(me).remove(); set(me, true).catch(() => {}); }
+      report(live ? '' : 'Reconnecting…');
+    }));
+    unsubs.push(onValue(ref(db, `rooms/${c}/viewers`), snap => { count = snap.size; report(live ? '' : 'Reconnecting…'); }));
+    unsubs.push(onValue(ref(db, `rooms/${c}/state`), snap => {
+      const st = snap.val();
+      onState(st && st.game === game ? st : null);
+    }));
+  }
+  // Leave the room this device is in (its presence entry goes with it).
+  function leave() {
+    if (!code) return;
+    set(ref(db, `rooms/${code}/viewers/${ME}`), null).catch(() => {});
+    unsubs.forEach(u => u()); unsubs = []; code = null;
+  }
+
+  async function create(state) {
+    for (let tries = 0; tries < 20; tries++) {
+      const c = newCode();
+      // Claim a code nobody has used in the last 12 hours.
+      const res = await runTransaction(ref(db, `rooms/${c}/owner`), cur => {
+        if (!cur || cur.id === ME || now() - cur.at > 12 * 3600e3) return { id: ME, at: now() };
+        return undefined;
+      });
+      if (!res.committed) continue;
+      leave();
+      await set(ref(db, `rooms/${c}/state`), { phase: 'shared', ...state, game });
+      watch(c);
+      return c;
+    }
+    throw new Error('no free room code');
+  }
+  async function join(raw) {
+    const c = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!/^[A-Z2-9]{4}$/.test(c)) return 'bad';
+    const st = (await get(ref(db, `rooms/${c}/state`))).val();
+    if (!st) return 'empty';
+    if (st.game !== game) return 'other';
+    if (c !== code) { leave(); watch(c); }
+    return 'ok';
+  }
+  function send(state) {
+    if (!code) return Promise.resolve();
+    return set(ref(db, `rooms/${code}/state`), { phase: 'shared', ...state, game });
+  }
+
+  return { create, join, send, code: () => code };
 }

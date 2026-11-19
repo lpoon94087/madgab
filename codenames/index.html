@@ -11,14 +11,32 @@
   <h1><button id="btnMenu" class="brand" aria-haspopup="true" aria-expanded="false">Code<span>names</span> <small>▾</small></button></h1>
   <div id="menu" class="menu hidden" role="menu"></div>
   <div class="status" id="status"></div>
+  <button id="btnRoom" class="room-btn hidden" aria-haspopup="dialog"></button>
 </header>
+
+<div id="roomDlg" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="roomTitle">
+  <div class="panel">
+    <h2 id="roomTitle">Spymaster <span>room</span></h2>
+    <p style="margin:6px 0 2px">This phone's room</p>
+    <div class="code" id="roomMine">—</div>
+    <p class="muted" style="font-size:15px" id="roomCount"></p>
+    <p class="muted" style="font-size:15px">Every phone in a room shows the same key, and <b>New key</b> on any of them changes it on all of them. To share a key, type the room code from the other spymaster's phone:</p>
+    <input id="roomInput" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD"
+      style="font: 700 28px/1 ui-monospace, Menlo, monospace; letter-spacing: 6px; text-transform: uppercase; text-align: center">
+    <p class="muted" id="roomMsg" style="font-size:15px;min-height:1.4em;margin:8px 0"></p>
+    <div class="row">
+      <button id="btnRoomCancel">Cancel</button>
+      <button class="primary" id="btnRoomJoin">Join</button>
+    </div>
+  </div>
+</div>
 
 <div id="about" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
   <div class="panel">
     <h2 id="aboutTitle">Code<span>names</span></h2>
     <div class="muted" id="aboutVersion"></div>
     <p id="aboutCards"></p>
-    <p class="muted" style="font-size:15px">Put the board on a big shared screen and tap a card to change its colour. The two spymasters share one phone showing the Spymaster key.</p>
+    <p class="muted" style="font-size:15px">Put the board on a big shared screen and tap a card to change its colour. Spymasters open the Spymaster key on their phones; phones in the same room show the same key.</p>
     <button class="primary" id="btnAboutClose" style="width:100%">Close</button>
   </div>
 </div>
@@ -28,7 +46,7 @@
   <section id="choose" class="hidden">
     <div class="big-choice">
       <button id="btnBoard">Board<small>The 25 word cards, for a TV or big screen everyone can see. Tap a card to change its colour.</small></button>
-      <button id="btnKey">Spymaster<small>The secret key card. Both spymasters share this one screen; nobody else looks.</small></button>
+      <button id="btnKey">Spymaster<small>The secret key card, for the spymasters' phones only. Phones in the same room show the same key.</small></button>
     </div>
     <p class="center"><a class="back" href="../">← Home</a></p>
   </section>

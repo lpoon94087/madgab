@@ -1,15 +1,15 @@
-import { $, shuffle, lines, keepAwake, initMenu, initAbout } from '../shared/common.js';
+import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../shared/common.js';
 
 // Codenames: a board for the shared screen and a key card for the spymasters.
-// The two aren't linked: like the boxed game, the spymasters' key is dealt on its own, and both
-// spymasters share one screen (a second phone would deal a different key).
+// The two aren't linked: like the boxed game, the spymasters' key is dealt on its own. Spymaster
+// phones share their key through a room (see SPYMASTER KEY below).
 // Words come from words.txt; ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo reveals random cards every second, for showing the board off.
-const VERSION = '1.0', RELEASED = '2026-11-19';
+const VERSION = '1.1', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
-const show = name => views.forEach(s => $(s).classList.toggle('hidden', s !== name));
+const show = name => { views.forEach(s => $(s).classList.toggle('hidden', s !== name)); $('btnRoom').classList.toggle('hidden', name !== 'key'); };
 
 // ───────────────────────── BOARD ─────────────────────────
 // A card's colour: 0 tan (not guessed yet), 1 grey (bystander), 2 red, 3 blue, 4 black (assassin).
@@ -98,34 +98,117 @@ function newBoard() {
 // ───────────────────────── SPYMASTER KEY ─────────────────────────
 // 9 cards for the team that goes first, 8 for the other, 7 bystanders, 1 assassin.
 // The frame's colour says who goes first. The key is kept until New key, so a reload doesn't lose it.
-const KEY_STORE = 'cn.key';
+//
+// Every spymaster phone is in a room (shared/rooms.js shareRoom), shown as a code in the top right.
+// A new phone gets a random room; tapping the code lets you type another phone's code, and then
+// both show the same key. New key on any phone changes it on all of them. The board isn't in the
+// room. With no internet the key still works on its own.
+const KEY_STORE = 'cn.key', ROOM_STORE = 'cn.room';
+let key = null, room = null, roomState = { text: 'Connecting…', on: false, count: 0, code: '' };
+const local = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const validKey = k => k && (k.first === 'red' || k.first === 'blue') && Array.isArray(k.cells) && k.cells.length === 25;
 function dealKey() {
   const first = Math.random() < .5 ? 'red' : 'blue', second = first === 'red' ? 'blue' : 'red';
   const cells = shuffle([...Array(9).fill(first), ...Array(8).fill(second), ...Array(7).fill('bystander'), 'assassin']);
-  const key = { first, cells };
-  try { localStorage.setItem(KEY_STORE, JSON.stringify(key)); } catch {}
-  return key;
+  return { first, cells, dealt: Date.now() };
 }
-function savedKey() {
-  try { const k = JSON.parse(localStorage.getItem(KEY_STORE)); if (k && k.cells && k.cells.length === 25) return k; } catch {}
-  return null;
+function setKey(k) {
+  key = { first: k.first, cells: k.cells, dealt: k.dealt || 0 };
+  local.set(KEY_STORE, key);
+  renderKey();
 }
-function renderKey(key) {
+function renderKey() {
+  if (!key) return;
   $('keyCard').className = `cn-key first-${key.first}`;
   $('keyCard').innerHTML = key.cells.map(c => `<div class="cn-spot ${c}">${c === 'assassin' ? '✕' : ''}</div>`).join('');
   $('keyFirst').className = `cn-first first-${key.first}`;
   $('keyFirst').textContent = `${key.first === 'red' ? 'Red' : 'Blue'} goes first`;
 }
+
+// The room button in the top right: the code, a dot for the connection and how many phones share it.
+function renderRoom() {
+  const r = roomState, b = $('btnRoom');
+  const onKey = !$('key').classList.contains('hidden');
+  b.classList.toggle('hidden', !onKey);
+  const label = r.code ? `Room ${r.code}` : r.text;
+  const extra = r.code && r.on && r.count > 1 ? ` · ${r.count} phones` : r.code && !r.on ? ` · ${r.text || 'Offline'}` : '';
+  b.innerHTML = `<span class="dot ${r.on && r.code ? 'on' : ''}"></span>${esc(label)}<small>${esc(extra)}</small>`;
+  $('roomMine').textContent = r.code || '—';
+  $('roomCount').textContent = r.code && r.on
+    ? (r.count > 1 ? `${r.count} phones are sharing this key.` : 'Only this phone is in the room so far.')
+    : r.text || "You're offline.";
+}
+
+async function startRoom() {
+  if (room) return;
+  if (!navigator.onLine) {
+    roomState = { text: 'Offline', on: false, count: 0, code: '' }; renderRoom();
+    addEventListener('online', startRoom, { once: true });
+    return;
+  }
+  roomState = { text: 'Connecting…', on: false, count: 0, code: '' }; renderRoom();
+  try {
+    const { shareRoom } = await import('../shared/rooms.js');
+    room = shareRoom({
+      game: 'cn',
+      onState: s => { if (validKey(s)) setKey(s); },
+      onStatus: st => { roomState = st; if (st.code) local.set(ROOM_STORE, st.code); renderRoom(); },
+    });
+    // Back to the room this phone was in, if it's still there; otherwise a new one with this key.
+    const saved = local.get(ROOM_STORE);
+    if (!saved || await room.join(saved) !== 'ok') await room.create(key);
+  } catch (e) {
+    room = null;
+    roomState = { text: 'No room', on: false, count: 0, code: '' }; renderRoom();
+  }
+}
+
 function openKey() {
-  renderKey(savedKey() || dealKey());
+  if (!key) setKey(validKey(local.get(KEY_STORE)) ? local.get(KEY_STORE) : dealKey());
   history.replaceState(null, '', '#spymaster');
   document.body.classList.remove('cn-wide');
-  show('key'); keepAwake();
+  show('key'); keepAwake(); renderRoom(); startRoom();
 }
 function newKey() {
-  if (!confirm('Deal a new key card? Only do this for a new board.')) return;
-  renderKey(dealKey());
+  const others = roomState.code && roomState.count > 1;
+  if (!confirm(others ? `Deal a new key card? Every phone in room ${roomState.code} gets it.` : 'Deal a new key card?')) return;
+  setKey(dealKey());
+  if (room) room.send(key).catch(() => {});
 }
+
+// The room dialog: this phone's code, and a box to type another phone's code.
+const dlg = $('roomDlg');
+function openRoomDlg() {
+  $('roomInput').value = ''; $('roomMsg').textContent = '';
+  dlg.classList.remove('hidden'); renderRoom(); $('roomInput').focus();
+}
+const closeRoomDlg = () => dlg.classList.add('hidden');
+async function joinRoom() {
+  const code = $('roomInput').value.trim().toUpperCase();
+  if (!room) { $('roomMsg').textContent = "You're offline. Joining a room needs internet."; return; }
+  if (code === roomState.code) { closeRoomDlg(); return; }
+  $('roomMsg').textContent = 'Joining…'; $('btnRoomJoin').disabled = true;
+  try {
+    const res = await room.join(code);
+    const msg = {
+      bad: 'Room codes are 4 letters and numbers.',
+      empty: `There's no spymaster key in room ${code}. Check the code on the other phone.`,
+      other: `Room ${code} is another game's room. Check the code on the other phone.`,
+    }[res];
+    if (msg) $('roomMsg').textContent = msg; else closeRoomDlg();
+  } catch (e) {
+    $('roomMsg').textContent = 'Could not reach the game database: ' + (e.message || e);
+  } finally { $('btnRoomJoin').disabled = false; }
+}
+$('btnRoom').onclick = openRoomDlg;
+$('btnRoomJoin').onclick = joinRoom;
+$('btnRoomCancel').onclick = closeRoomDlg;
+$('roomInput').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
+dlg.addEventListener('click', e => { if (e.target === dlg) closeRoomDlg(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRoomDlg(); });
 
 function openChoose() {
   history.replaceState(null, '', location.pathname + location.search);
@@ -140,7 +223,7 @@ initMenu(() => {
   const view = views.find(v => !$(v).classList.contains('hidden'));
   return [
     ...(view === 'board' ? [['New board', newBoard], ...(document.fullscreenEnabled ? [['Full screen', fullScreen]] : []), ['Spymaster key', openKey]] : []),
-    ...(view === 'key' ? [['New key', newKey], ['Board', openBoard]] : []),
+    ...(view === 'key' ? [['New key', newKey], ['Room', openRoomDlg], ['Board', openBoard]] : []),
     ...(view !== 'choose' ? [['Change screen', openChoose]] : []),
     ['About', showAbout],
   ];
