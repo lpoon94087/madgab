@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Codenames</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body class="cn">
+<header>
+  <h1><button id="btnMenu" class="brand" aria-haspopup="true" aria-expanded="false">Code<span>names</span> <small>▾</small></button></h1>
+  <div id="menu" class="menu hidden" role="menu"></div>
+  <div class="status" id="status"></div>
+</header>
+
+<div id="about" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="panel">
+    <h2 id="aboutTitle">Code<span>names</span></h2>
+    <div class="muted" id="aboutVersion"></div>
+    <p id="aboutCards"></p>
+    <p class="muted" style="font-size:15px">Put the board on a big shared screen and tap a card to change its colour. The two spymasters share one phone showing the Spymaster key.</p>
+    <button class="primary" id="btnAboutClose" style="width:100%">Close</button>
+  </div>
+</div>
+
+<main>
+  <!-- Pick a screen -->
+  <section id="choose" class="hidden">
+    <div class="big-choice">
+      <button id="btnBoard">Board<small>The 25 word cards, for a TV or big screen everyone can see. Tap a card to change its colour.</small></button>
+      <button id="btnKey">Spymaster<small>The secret key card. Both spymasters share this one screen; nobody else looks.</small></button>
+    </div>
+    <p class="center"><a class="back" href="../">← Home</a></p>
+  </section>
+
+  <!-- The shared board -->
+  <section id="board" class="hidden">
+    <div class="cn-board" id="wordBoard"></div>
+    <p class="muted center" style="font-size:14px;margin:0">Tap a card to go tan → grey → red → blue → black. Reloading the page deals a new board.</p>
+  </section>
+
+  <!-- The spymasters' key card -->
+  <section id="key" class="hidden">
+    <div class="cn-first" id="keyFirst"></div>
+    <div class="cn-key" id="keyCard"></div>
+    <p class="muted center" style="font-size:14px;margin:0">9 cards for the team that goes first, 8 for the other team, 7 bystanders and 1 assassin (✕).</p>
+    <button id="btnNewKey">New key</button>
+  </section>
+</main>
+
+<script type="module" src="cn.js"></script>
+</body>
+</html>

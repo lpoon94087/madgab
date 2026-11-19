@@ -10,6 +10,7 @@ The start page lets you pick a game. Each game lives in its own folder and share
 | `watch-ya-mouth/` | Watch Ya Mouth | 1, held by the reader |
 | `password/` | Password | 1, or a moderator plus clue-giver and scoreboard screens |
 | `word-generator/` | Word Generator | 1, or a moderator plus any number of viewers |
+| `codenames/` | Codenames | 2: the board on a big screen, the spymaster key on a phone |
 
 ## Mad Gab
 
@@ -48,11 +49,20 @@ Words for Charades, Pictionary, describe-it games and anything else. Choose *Mod
 
 Words don't repeat until the chosen lists run out. The lists are `word-generator/lists/<id>.txt`, one word per line; `word-generator/lists.json` gives each its name, its group in the picker (*Games* or *Topics*), its family (lists in the same family are shown together under one heading with an *All* toggle; lists with no family go under their group) and the tip shown with it. To add a list, add a file and an entry. The lists were written for this site; the Pictionary and Charades lists also include words picked from the 12dicts word list (2of12), filtered to ones people know and can draw or act out. *Pictionary: Phrases* and *Charades: Phrases* hold two- to five-word phrases (things to draw, and actions such as "walking the dog") that aren't in any other list.
 
+## Codenames
+
+Opens on a choice between **Board** and **Spymaster**.
+
+- **Board** — for a TV or big screen. 25 words dealt from `codenames/words.txt` (one per line). Tap a card to cycle tan → grey (bystander) → red → blue → black (assassin); a few seconds after a card turns, it shows a picture from `codenames/img/` (listed in `codenames/images.json`). Reloading deals a new board, and so does *New board* in the menu. `?addon=WORD,WORD` adds words to the pool; `?demo` turns random cards every second.
+- **Spymaster** — the secret key card: a 5×5 grid with 9 cards for the team that goes first, 8 for the other team, 7 bystanders and 1 assassin (✕). The frame is red or blue for the team that goes first. Both spymasters share one screen, since another device would deal a different key. The key is kept on the device until *New key*, so a reload doesn't lose it.
+
+The board and the key aren't linked: the spymasters say which cards to turn, as with the boxed game's key cards. The board came from the stand-alone codenames repo, with its default picture set.
+
 ## Offline
 
 After one visit with internet, every game works on one device with no connection: `sw.js` (a service worker) keeps a copy of the whole site, including the Firebase and QR code libraries. Rooms still need internet, so offline the moderator's room panel says *Offline* and a viewer waits until the device is back online. Pages come from the saved copy at once and are refreshed in the background, so a change shows on the next visit; the start page's *Reload* gets it right away.
 
-`sw.js` lists every file it saves and a version made from their contents. `tools/stamp-sw.py` rewrites both; run it before committing (the local pre-commit hook in `.git/hooks/pre-commit` does it and stages `sw.js`). A new file the site serves is picked up as long as it is under `shared/` or a game's folder.
+`sw.js` lists every file it saves and a version made from their contents. `tools/stamp-sw.py` rewrites both; run it before committing (the local pre-commit hook in `.git/hooks/pre-commit` does it and stages `sw.js`). A new file the site serves is picked up as long as it is under `shared/` or a game's folder. Codenames' pictures are left out of the list (they're large) and are saved the first time a board shows them.
 
 ## Code
 

@@ -6,8 +6,12 @@
 // page's Reload, the word lists' index) go to the network first and fall back to the copy.
 // VERSION and FILES are written by tools/stamp-sw.py (run on every commit by the pre-commit hook);
 // a new VERSION makes phones download a fresh copy of every file.
-const VERSION = 'e4c12597bf06';
+const VERSION = 'f7a1ee0627c1';
 const FILES = [
+  'codenames/cn.js',
+  'codenames/images.json',
+  'codenames/',
+  'codenames/words.txt',
   '',
   'madgab/flashcards.txt',
   'madgab/',
