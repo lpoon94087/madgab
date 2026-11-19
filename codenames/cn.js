@@ -5,7 +5,7 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.4', RELEASED = '2026-11-19';
+const VERSION = '2.7', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -344,42 +344,48 @@ initMenu(() => {
 });
 
 // ───────────────────────── WORD LISTS ─────────────────────────
-// Tick boxes on the start screen; any mix. Changing them means the next screen opened starts a
-// new game with the new words (for its whole room).
-const LISTS_STORE = 'cn.lists';
+// On the start screen: pick one main list (lists.json entries without "mix"), and tick any
+// mix-ins ("mix": true) to add their words to it. Changing either means the next screen opened
+// starts a new game with the new words (for its whole room).
+const LIST_STORE = 'cn.list', MIX_STORE = 'cn.mix';
 let lists = [], listsChanged = false;
 const parse = line => { const [w, ...tags] = line.split('#'); return { w: w.trim().toUpperCase(), tags: tags.map(t => t.trim()).filter(Boolean) }; };
-function chosenIds() {
-  const saved = local.get(LISTS_STORE);
-  const ids = Array.isArray(saved) ? saved.filter(id => lists.some(l => l.id === id)) : [];
-  return ids.length ? ids : lists.slice(0, 1).map(l => l.id);
+const mains = () => lists.filter(l => !l.mix), mixes = () => lists.filter(l => l.mix);
+function chosenId() {
+  const saved = local.get(LIST_STORE);
+  return mains().some(l => l.id === saved) ? saved : mains()[0] && mains()[0].id;
+}
+function chosenMix() {
+  const saved = local.get(MIX_STORE);
+  return Array.isArray(saved) ? saved.filter(id => mixes().some(l => l.id === id)) : [];
 }
 function buildPool() {
-  const seen = new Map();
-  for (const l of lists) if (chosenIds().includes(l.id)) for (const e of l.words) if (!seen.has(e.w)) seen.set(e.w, e);
+  const seen = new Map(), use = [chosenId(), ...chosenMix()];
+  for (const id of use) for (const e of (lists.find(l => l.id === id) || { words: [] }).words) if (!seen.has(e.w)) seen.set(e.w, e);
   const addon = params.get('addon');
   if (addon) for (const w of addon.split(',').map(x => x.trim().toUpperCase()).filter(Boolean)) if (!seen.has(w)) seen.set(w, { w, tags: [] });
   words = [...seen.values()];
   $('listInfo').textContent = words.length >= 25
     ? `${words.length} words to deal from.`
-    : 'Tick at least one list.';
+    : 'Could not load this list.';
+  $('mixNote').textContent = mixes().filter(l => chosenMix().includes(l.id) && l.note).map(l => `${l.name}: ${l.note}`).join(' ');
   $('btnBoard').disabled = $('btnKey').disabled = words.length < 25;
+}
+function chip(l, type, checked, onchange) {
+  const el = document.createElement('label'); el.className = 'chip'; el.title = l.note || '';
+  el.innerHTML = `<input type="${type}" name="cn-${type}" value="${esc(l.id)}"${checked ? ' checked' : ''}> ${esc(l.name)} <small>${l.words.length}</small>`;
+  el.querySelector('input').onchange = onchange;
+  return el;
 }
 function renderLists() {
   $('optOneTag').checked = oneTag();
   $('optOneTag').onchange = () => { local.set(ONE_TAG_STORE, $('optOneTag').checked); listsChanged = true; };
-  const ids = chosenIds();
-  $('listChips').innerHTML = '';
-  for (const l of lists) {
-    const chip = document.createElement('label'); chip.className = 'chip'; chip.title = l.note || '';
-    chip.innerHTML = `<input type="checkbox" value="${esc(l.id)}"${ids.includes(l.id) ? ' checked' : ''}> ${esc(l.name)} <small>${l.words.length}</small>`;
-    chip.querySelector('input').onchange = () => {
-      const now = [...$('listChips').querySelectorAll('input:checked')].map(i => i.value);
-      if (!now.length) { chip.querySelector('input').checked = true; return; }   // always at least one
-      local.set(LISTS_STORE, now); listsChanged = true; buildPool();
-    };
-    $('listChips').appendChild(chip);
-  }
+  const id = chosenId(), mix = chosenMix();
+  $('listChips').replaceChildren(...mains().map(l => chip(l, 'radio', l.id === id, () => { local.set(LIST_STORE, l.id); listsChanged = true; buildPool(); })));
+  $('mixChips').replaceChildren(...mixes().map(l => chip(l, 'checkbox', mix.includes(l.id), () => {
+    local.set(MIX_STORE, [...$('mixChips').querySelectorAll('input:checked')].map(i => i.value)); listsChanged = true; buildPool();
+  })));
+  $('mixRow').classList.toggle('hidden', !mixes().length);
 }
 // After the lists change, the next board or key opened starts a new game from them.
 function freshFromPicker() {

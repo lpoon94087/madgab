@@ -1,4 +1,6 @@
 [
   { "id": "original", "name": "Original", "note": "The 400 classic Codenames words." },
-  { "id": "extended", "name": "Extended", "note": "The classic words without countries, landmarks and a few odd ones, plus hundreds more everyday words." }
+  { "id": "extended", "name": "Extended", "note": "The classic words without countries, landmarks and a few odd ones, plus hundreds more everyday words." },
+  { "id": "fun", "name": "Fun", "mix": true, "note": "Movies, characters, brands, snacks, games, internet words and silly ones. Fine for kids." },
+  { "id": "after-dark", "name": "After Dark 18+", "mix": true, "note": "Party and innuendo words for adults. Leave it off when kids are playing." }
 ]

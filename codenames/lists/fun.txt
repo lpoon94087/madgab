@@ -1,0 +1,170 @@
+JAWS #movie
+FROZEN #movie
+UP #movie
+CARS #movie
+BIG #movie
+SPEED #movie
+GREASE #movie
+SPLASH #movie
+TWISTER #movie #toy
+BRAVE #movie
+TANGLED #movie
+SIGNS #movie
+ALIENS #movie
+GLADIATOR #movie
+TITANIC #movie
+PSYCHO #movie
+ROCKY #movie
+CASPER #movie #character
+SHREK #movie #character
+BAMBI #movie #character
+DUMBO #movie #character
+RAMBO #movie #character
+MOANA #movie #character
+ENCANTO #movie
+AVATAR #movie #internet
+JUMANJI #movie
+MATRIX #movie
+BARBIE #movie #toy
+YODA #character
+PIKACHU #character
+SHERLOCK #character
+ELMO #character
+MARIO #character
+SONIC #character
+GARFIELD #character
+SNOOPY #character
+GRINCH #character
+HULK #character
+THOR #character
+BATMAN #character
+SUPERMAN #character
+SPIDER-MAN #character
+WOLVERINE #character
+GANDALF #character
+DRACULA #character
+TARZAN #character
+POPEYE #character
+SCOOBY-DOO #character
+KERMIT #character
+GROOT #character
+PINOCCHIO #character
+CINDERELLA #character
+ELSA #character
+SIMBA #character
+NEMO #character
+WALDO #character
+YOSHI #character
+ZELDA #character
+HOMER #character
+MINION #character
+SMURF #character
+OLAF #character
+SANTA #character
+LEGO #brand #toy
+NETFLIX #brand
+IKEA #brand
+STARBUCKS #brand
+GOOGLE #brand
+TESLA #brand
+NIKE #brand
+DISNEY #brand
+SUBWAY #brand
+SPAM #brand #internet
+XBOX #brand #toy
+NINTENDO #brand
+YOUTUBE #brand #internet
+TIKTOK #brand #internet
+UBER #brand
+ZOOM #brand
+VELCRO #brand
+JEEP #brand
+CROCS #brand
+COSTCO #brand
+MCDONALD'S #brand
+NACHO #snack
+CHURRO #snack
+DORITO #snack
+OREO #snack
+TWINKIE #snack
+PRETZEL #snack
+SLURPEE #snack
+POPSICLE #snack
+S'MORE #snack
+NUGGET #snack
+BURRITO #snack
+DONUT #snack
+CUPCAKE #snack
+PANCAKE #snack
+MILKSHAKE #snack
+JERKY #snack
+SPRINKLES #snack
+LOLLIPOP #snack
+BACON #snack
+MEME #internet
+SELFIE #internet
+EMOJI #internet
+HASHTAG #internet
+VIRAL #internet
+PODCAST #internet
+WIFI #internet
+PASSWORD #internet
+PIXEL #internet
+INFLUENCER #internet #person
+GIF #internet
+CLICKBAIT #internet
+BLOG #internet
+APP #internet
+GLITCH #internet
+NOOB #internet
+EMAIL #internet
+MONOPOLY #toy
+TETRIS #toy
+FRISBEE #toy
+YO-YO #toy
+SLINKY #toy
+POKEMON #toy
+MINECRAFT #toy
+FORTNITE #toy
+JENGA #toy
+UNO #toy
+SCRABBLE #toy
+PAC-MAN #toy #character
+PINATA #toy
+TRAMPOLINE #toy
+SKATEBOARD #toy
+DOMINO #toy
+KAZOO #toy
+NERF #toy
+PLAY-DOH #toy
+BURP #gross
+FART #gross
+BOOGER #gross
+WEDGIE #gross
+NOOGIE #gross
+HICCUP #gross
+STINKY #gross
+SLIME #gross
+DISCO
+KARAOKE
+PAJAMAS
+SPATULA
+PICKLEBALL
+BIGFOOT #creature
+SASQUATCH #creature
+MULLET
+BEANIE
+GLITTER
+CONFETTI
+JETPACK
+LIGHTSABER
+HOVERBOARD
+FLOSS
+TICKLE
+SUPERPOWER
+SLEEPOVER
+BURGER #snack
+GUMMY #snack
+JELLO #snack
+TEDDY #toy
+JEDI #character
