@@ -5,7 +5,7 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 // phones share their key through a room (see SPYMASTER KEY below).
 // Words come from words.txt; ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo reveals random cards every second, for showing the board off.
-const VERSION = '1.1', RELEASED = '2026-11-19';
+const VERSION = '1.2', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
