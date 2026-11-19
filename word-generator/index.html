@@ -27,13 +27,12 @@
 <div id="howto" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="howTitle">
   <div class="panel">
     <h2 id="howTitle">How to <span>play</span></h2>
-    <p><b>Just words</b> — pick a list and tap <b>Next word</b> whenever you need one. Words don't repeat until the list runs out.</p>
+    <p><b>Just words</b> — tick the lists you want and tap <b>Next word</b> whenever you need one. Words don't repeat until the list runs out.</p>
     <p><b>Timed rounds</b> — teams take turns. The player up holds the phone, gets their team to guess as many words as they can before the clock runs out, and taps <b>Got It</b> or <b>Skip</b>.</p>
     <ul style="padding-left:20px;font-size:15px">
       <li><b>Charades</b> — act it out, no talking.</li>
       <li><b>Pictionary</b> — draw it, no letters or numbers.</li>
-      <li><b>Password</b> — one-word clues only.</li>
-      <li><b>Describe it</b> — talk around it without saying any part of it.</li>
+      <li><b>Describe it</b> — any list works: talk around the word without saying any part of it.</li>
     </ul>
     <p><b>More screens</b> — the <b>moderator</b> has every control. Other devices choose <b>Viewer</b> and join with the moderator's room code or QR code. They show the current word, the clock and the scores, but can't change anything. A <b>Scoreboard</b> joins the same way and shows only the clock and scores, so the guessing team can watch it; after each round it lists the words got and missed.</p>
     <button class="primary" id="btnHowClose" style="width:100%">Got it</button>
@@ -61,8 +60,12 @@
       <div id="qr"></div>
     </div>
     <div class="panel">
-      <label for="optList">Word list</label>
-      <select id="optList"></select>
+      <div class="muted" style="font-size:14px;margin-bottom:8px">Word lists: tick as many as you like</div>
+      <div class="row" style="margin-bottom:12px">
+        <button type="button" id="btnPickAll" class="chip-btn">Everything</button>
+        <button type="button" id="btnPickNone" class="chip-btn">Clear</button>
+      </div>
+      <div id="optLists"></div>
       <p class="muted" id="listTip" style="font-size:14px;margin:8px 0 0"></p>
       <label style="display:flex;gap:10px;align-items:center;margin:14px 0 0;color:var(--text);font-size:15px">
         <input type="checkbox" id="optCover" style="width:auto" checked> Cover each new word until it's tapped

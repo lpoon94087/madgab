@@ -6,7 +6,7 @@ import { hostRoom, viewRoom, roundState, savedRoom } from '../shared/rooms.js';
 // "Just words" hands out one word at a time; timed rounds use the shared round engine.
 // Like Mad Gab, a device is either the moderator (every control; works on its own too)
 // or a read-only viewer of the moderator's word, synced through a room (shared/rooms.js).
-const VERSION = '1.7', RELEASED = '2026-11-17';
+const VERSION = '1.8', RELEASED = '2026-11-19';
 
 const sections = ['home', 'setup', 'free', 'ready', 'play', 'over', 'join', 'viewer'];
 let at = 'home', room = null, role = null;
@@ -35,33 +35,64 @@ const loadLists = () => loading || (loading = (async () => {
   lists.forEach((l, i) => words[i].forEach(word => cards.push({ word, list: l.id })));
 })());
 
-// The list picker: every list, plus "all of" options for each family and for everything.
-// An option's value is the comma-separated ids it covers.
+// The list picker: a tick box per list, grouped under its family (Pictionary, Charades) or its group (Topics).
+// Each heading has an "All" toggle; Everything and Clear pick every list or none.
+let picked = new Set();
+const groupOf = l => l.family || l.group;
 function buildPicker() {
-  const sel = $('optList'), opt = (value, text) => `<option value="${value}">${text}</option>`;
-  const families = [...new Set(lists.map(l => l.family).filter(Boolean))];
-  let html = `<optgroup label="Mixes">${opt(lists.map(l => l.id).join(','), 'Everything')}`;
-  for (const f of families) {
-    const ids = lists.filter(l => l.family === f).map(l => l.id);
-    if (ids.length > 1) html += opt(ids.join(','), `All ${f}`);
+  const saved = st.get('lists', null) || (st.get('list', '') ? st.get('list', '').split(',') : ['pictionary-easy']);
+  picked = new Set(saved.filter(id => byId.has(id)));
+  const box = $('optLists'); box.innerHTML = '';
+  for (const g of [...new Set(lists.map(groupOf))]) {
+    const members = lists.filter(l => groupOf(l) === g);
+    const sec = document.createElement('div'); sec.className = 'pick-group';
+    sec.innerHTML = `<div class="pick-head"><b>${g}</b><button type="button" class="chip-btn"></button></div><div class="chips"></div>`;
+    for (const l of members) {
+      const chip = document.createElement('label'); chip.className = 'chip';
+      const n = cards.filter(c => c.list === l.id).length;
+      chip.innerHTML = `<input type="checkbox" value="${l.id}"> ${l.name.replace(`${g}: `, '')} <small>${n}</small>`;
+      sec.querySelector('.chips').append(chip);
+    }
+    sec.querySelector('.chip-btn').onclick = () => {
+      const all = members.every(l => picked.has(l.id));
+      members.forEach(l => all ? picked.delete(l.id) : picked.add(l.id));
+      onListChange();
+    };
+    box.append(sec);
   }
-  html += '</optgroup>';
-  for (const g of [...new Set(lists.map(l => l.group))])
-    html += `<optgroup label="${g}">${lists.filter(l => l.group === g).map(l => opt(l.id, l.name)).join('')}</optgroup>`;
-  sel.innerHTML = html;
-  const saved = st.get('list', 'pictionary-easy');
-  sel.value = [...sel.options].some(o => o.value === saved) ? saved : sel.options[0].value;
+  box.onchange = e => { if (e.target.checked) picked.add(e.target.value); else picked.delete(e.target.value); onListChange(); };
+  $('btnPickAll').onclick = () => { lists.forEach(l => picked.add(l.id)); onListChange(); };
+  $('btnPickNone').onclick = () => { picked.clear(); onListChange(); };
 }
-const chosen = () => new Set($('optList').value.split(','));
-const chosenName = () => $('optList').selectedOptions[0].textContent;
+const chosen = () => picked;
+// A short name for the chosen lists: one list, "All Pictionary", "Everything", or a few names joined.
+function chosenName() {
+  if (!picked.size) return 'No lists';
+  if (picked.size === lists.length) return 'Everything';
+  const groups = [...new Set(lists.map(groupOf))], parts = [];
+  for (const g of groups) {
+    const members = lists.filter(l => groupOf(l) === g), on = members.filter(l => picked.has(l.id));
+    if (on.length === members.length && members.length > 1) parts.push(`All ${g}`);
+    else on.forEach(l => parts.push(l.name));
+  }
+  return parts.length <= 3 ? parts.join(' + ') : `${picked.size} lists`;
+}
 // The tip for the chosen lists: shared if they all agree, otherwise a general one.
 function chosenTip() {
-  const tips = [...new Set([...chosen()].map(id => byId.get(id).tip))];
+  if (!picked.size) return 'Tick at least one list.';
+  const tips = [...new Set([...picked].map(id => byId.get(id).tip))];
   return tips.length === 1 ? tips[0] : 'Each word shows what to do with it.';
 }
 function onListChange() {
-  st.set('list', $('optList').value);
-  $('listTip').textContent = chosenTip();
+  st.set('lists', [...picked]);
+  document.querySelectorAll('#optLists input').forEach(i => { i.checked = picked.has(i.value); });
+  document.querySelectorAll('#optLists .pick-group').forEach(sec => {
+    const ids = [...sec.querySelectorAll('input')].map(i => i.value);
+    sec.querySelector('.chip-btn').textContent = ids.every(id => picked.has(id)) ? 'None' : 'All';
+  });
+  const n = cards.filter(c => picked.has(c.list)).length;
+  $('listTip').textContent = picked.size ? `${n.toLocaleString()} word${n === 1 ? '' : 's'} · ${chosenTip()}` : chosenTip();
+  $('btnStart').disabled = $('btnFree').disabled = !picked.size;
   if (G) G.updateDeckInfo();
 }
 
@@ -166,7 +197,6 @@ async function startModerator() {
         if (on) { $('pWord').textContent = 'START'; $('pList').textContent = 'Tap when you\'re ready'; card.focus(); }
       },
     });
-    $('optList').onchange = onListChange;
     onListChange();
   } catch {
     $('deckInfo').textContent = 'Could not load the word lists — open this page from a web server, not as a local file.';
