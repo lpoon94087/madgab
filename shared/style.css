@@ -216,3 +216,7 @@ body.cn header .status:empty { display: none; }
 .cn-card.picked, .cn-card.picked:hover { transform: scale(1.1);
   box-shadow: 0 0 0 3px #fff, 0 0 0 7px var(--accent), 0 12px 28px rgba(0,0,0,.55); }
 body.cn #choose { display: flex; flex-direction: column; gap: 16px; }
+/* The board's status line sits in the header, beside the title (its own header row on a phone) */
+.cn-status.in-head { flex: 1; min-width: 0; flex-wrap: nowrap; justify-content: center; gap: 24px; margin: 0 12px; font-size: clamp(15px, 1.8vw, 22px); white-space: nowrap; }
+.cn-status.in-head .cn-left:last-of-type { margin-right: 0; }
+@media (max-width: 700px) { body.cn header { flex-wrap: wrap; } .cn-status.in-head { order: 3; flex-basis: 100%; margin: 2px 0 0; justify-content: space-between; } }

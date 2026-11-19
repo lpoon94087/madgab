@@ -5,11 +5,19 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.12', RELEASED = '2026-11-19';
+const VERSION = '2.13', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
-const show = name => { views.forEach(s => $(s).classList.toggle('hidden', s !== name)); $('btnRoom').classList.toggle('hidden', name === 'choose'); };
+const show = name => { views.forEach(s => $(s).classList.toggle('hidden', s !== name)); $('btnRoom').classList.toggle('hidden', name === 'choose'); placeStatus(); };
+// While the board shows, its status line (cards left, who goes first) sits in the header beside
+// the title, to leave more room for the cards. On other screens it goes back into the board.
+function placeStatus() {
+  const el = $('boardStatus'), up = !$('board').classList.contains('hidden');
+  if (up && el.parentElement.tagName !== 'HEADER') document.querySelector('header').insertBefore(el, $('btnRoom'));
+  if (!up && el.parentElement.tagName === 'HEADER') $('board').prepend(el);
+  el.classList.toggle('in-head', up);
+}
 
 const BOARD_STORE = 'cn.board', KEY_STORE = 'cn.key', ROOM_STORE = 'cn.room';
 const local = {
