@@ -5,7 +5,7 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.7', RELEASED = '2026-11-19';
+const VERSION = '2.8', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -33,12 +33,18 @@ const sameKey = (a, b) => a && b && a.first === b.first && a.cells.join() === b.
 // A word in a list may have tags ("LONDON #city", "WITCH #person #creature"): a board never gets
 // two words that share a tag, so a spymaster can't link two of them with a clue like "cities".
 // The start screen's "One word per category" box turns this off, for a board dealt at random.
+// Always, whatever the box says: no two cards share a word, so ICE and ICE CREAM, or SPIDER and
+// SPIDER-MAN, are never on one board (entries are split into words at spaces and hyphens).
 const ONE_TAG_STORE = 'cn.oneTag';
 const oneTag = () => local.get(ONE_TAG_STORE) !== false;
+const partsOf = w => w.split(/[\s-]+/).filter(Boolean);
 function dealBoard() {
-  const out = [], used = new Set(), check = oneTag();
+  const out = [], used = new Set(), usedParts = new Set(), check = oneTag();
   for (const { w, tags } of shuffle([...words])) {
+    const parts = partsOf(w);
+    if (parts.some(x => usedParts.has(x))) continue;
     if (check && tags.some(t => used.has(t))) continue;
+    parts.forEach(x => usedParts.add(x));
     tags.forEach(t => used.add(t));
     out.push(w);
     if (out.length === 25) break;
