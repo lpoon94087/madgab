@@ -5,7 +5,7 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.18', RELEASED = '2026-11-19';
+const VERSION = '2.19', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -204,7 +204,7 @@ function renderLeft() {
 }
 
 // ───────────────────────── FINALE ─────────────────────────
-// When a game ends, every screen in the room shows a big overlay: "RED WINS!" (that team's last
+// When a game ends, every board screen in the room (not the spymaster phones) shows a big overlay: "RED WINS!" (that team's last
 // card turned; confetti and a fanfare) or "ASSASSIN!" (a red glow and a shake). It shows only at
 // the moment the game ends, not when a screen opens or reloads an ended game; turning the last
 // card back face down (a mis-tap) just carries on.
@@ -222,6 +222,7 @@ function checkFinale(left) {
   setTimeout(() => showFinale(end), 700);                     // after the card has flipped
 }
 function showFinale(end) {
+  if ($('board').classList.contains('hidden')) return;   // board screens only
   const box = $('finale'), win = end !== 'assassin';
   box.className = `overlay cn-finale ${end}`;
   $('finaleText').textContent = win ? `${end === 'red' ? 'Red' : 'Blue'} wins!` : 'Assassin!';
@@ -230,7 +231,7 @@ function showFinale(end) {
     const c = end === 'red' ? ['#d44d4d', '#ff8a80', '#fff'] : ['#4d7bd4', '#90b4ff', '#fff'];
     return `<i style="left:${Math.random() * 100}%;background:${c[Math.floor(Math.random() * 3)]};animation-delay:${(Math.random() * 1.5).toFixed(2)}s;animation-duration:${(2.5 + Math.random() * 2).toFixed(2)}s;transform:rotate(${Math.floor(Math.random() * 360)}deg)"></i>`;
   }).join('') : '';
-  if (win && soundOn() && !$('board').classList.contains('hidden')) fanfare();
+  if (win && soundOn()) fanfare();
   $('btnFinaleNew').focus();
 }
 function closeFinale() { $('finale').classList.add('hidden'); $('confetti').innerHTML = ''; }
