@@ -5,7 +5,7 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.11', RELEASED = '2026-11-19';
+const VERSION = '2.12', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
