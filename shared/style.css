@@ -215,3 +215,4 @@ body.cn header .status:empty { display: none; }
 .cn-cell:has(.picked) { z-index: 5; }
 .cn-card.picked, .cn-card.picked:hover { transform: scale(1.1);
   box-shadow: 0 0 0 3px #fff, 0 0 0 7px var(--accent), 0 12px 28px rgba(0,0,0,.55); }
+body.cn #choose { display: flex; flex-direction: column; gap: 16px; }

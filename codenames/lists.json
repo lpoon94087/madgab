@@ -1,0 +1,4 @@
+[
+  { "id": "original", "name": "Original", "note": "The 400 classic Codenames words." },
+  { "id": "extended", "name": "Extended", "note": "The classic words without countries, landmarks and a few odd ones, plus hundreds more everyday words." }
+]

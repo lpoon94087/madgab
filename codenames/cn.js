@@ -2,9 +2,10 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 
 // Codenames: a board for the shared screen and a key card for the spymasters, kept in step
 // through a room (see ROOM below). The board knows the key, so tapping a card turns it to its colour.
-// Words come from words.txt; ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
+// Words come from the lists in lists/ (named in lists.json), picked on the start screen;
+// ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.1', RELEASED = '2026-11-19';
+const VERSION = '2.2', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -21,7 +22,7 @@ const local = {
 //   key   = { first, cells }   who goes first, and what each of the 25 places is:
 //                              'red' | 'blue' | 'bystander' | 'assassin' (9 / 8 / 7 / 1)
 // Place i on the key is card i on the board. Both are shared through the room.
-let words = [], board = null, key = null;
+let words = [], board = null, key = null;   // words: the pool to deal from, [{ w, group }]
 // Which parts this screen brings to a room. A board screen brings both (it needs the key to know
 // each card's colour); a spymaster screen brings the key. A room missing a part gets it from the
 // first screen that has it.
@@ -29,7 +30,18 @@ const mine = { board: false, key: false };
 const validBoard = b => b && Array.isArray(b.words) && b.words.length === 25 && Array.isArray(b.turned) && b.turned.length === 25;
 const validKey = k => k && (k.first === 'red' || k.first === 'blue') && Array.isArray(k.cells) && k.cells.length === 25;
 const sameKey = (a, b) => a && b && a.first === b.first && a.cells.join() === b.cells.join();
-const dealBoard = () => ({ words: shuffle([...words]).slice(0, 25), turned: Array(25).fill(0) });
+// A word in a list may name a group ("LONDON #city"): a board gets at most one word from each
+// group, so a spymaster can't link two of them with a clue like "cities".
+function dealBoard() {
+  const out = [], used = new Set();
+  for (const { w, group } of shuffle([...words])) {
+    if (group && used.has(group)) continue;
+    if (group) used.add(group);
+    out.push(w);
+    if (out.length === 25) break;
+  }
+  return { words: out, turned: Array(25).fill(0) };
+}
 function dealKey() {
   const first = Math.random() < .5 ? 'red' : 'blue', second = first === 'red' ? 'blue' : 'red';
   return { first, cells: shuffle([...Array(9).fill(first), ...Array(8).fill(second), ...Array(7).fill('bystander'), 'assassin']) };
@@ -152,7 +164,7 @@ function startDemo() {
 }
 
 function openBoard() {
-  ensureGame();
+  ensureGame(); freshFromPicker();
   mine.board = mine.key = true;
   repaint(); renderLeft();
   if (params.has('demo') && !demo) startDemo();
@@ -168,8 +180,9 @@ function newGame() {
   for (const type of Object.keys(pics)) shuffle(pics[type]);
   board = dealBoard(); key = dealKey(); save();
   repaint(); renderKey(); renderLeft();
-  send({ words: board.words, turned: board.turned, first: key.first, cells: key.cells });
+  sendGame();
 }
+const sendGame = () => send({ words: board.words, turned: board.turned, first: key.first, cells: key.cells });
 
 // ───────────────────────── SPYMASTER KEY ─────────────────────────
 // 9 places for the team that goes first, 8 for the other, 7 bystanders, 1 assassin. The frame's
@@ -188,7 +201,7 @@ function renderMarks() {
 }
 
 function openKey() {
-  ensureGame();
+  ensureGame(); freshFromPicker();
   mine.key = true;
   renderKey();
   history.replaceState(null, '', '#spymaster');
@@ -203,7 +216,7 @@ function openKey() {
 // show on this screen too, and whatever the room lacks (a board, a key) this screen fills in.
 // The room holds: words, turned (the board) and first, cells (the key).
 // With no internet each screen works on its own.
-let room = null, last = null, roomState = { text: 'Connecting…', on: false, count: 0, code: '' };
+let room = null, last = null, pushOnJoin = false, roomState = { text: 'Connecting…', on: false, count: 0, code: '' };
 const others = () => roomState.code && roomState.count > 1;
 const send = part => { if (room && room.code && room.code()) room.send(part).catch(() => {}); };
 const ownParts = () => ({
@@ -222,6 +235,8 @@ function fillRoom() {
 function onRoomState(s) {
   last = s;
   if (!s) return;
+  // A game dealt from the start screen before the room connected: it replaces the room's game.
+  if (pushOnJoin) { pushOnJoin = false; sendGame(); return; }
   const newKey = validKey(s) && !sameKey(key, s);
   if (newKey) key = { first: s.first, cells: [...s.cells] };
   if (validBoard(s)) board = { words: [...s.words], turned: [...s.turned] };
@@ -311,7 +326,7 @@ function openChoose() {
 }
 
 // ───────────────────────── PAGE ─────────────────────────
-const showAbout = initAbout({ version: VERSION, released: RELEASED, cardsText: async () => `${words.length} words.` });
+const showAbout = initAbout({ version: VERSION, released: RELEASED, cardsText: async () => lists.map(l => `${l.name}: ${l.words.length} words`).join(' · ') });
 const fullScreen = () => { try { document.documentElement.requestFullscreen(); } catch {} };
 initMenu(() => {
   const view = views.find(v => !$(v).classList.contains('hidden'));
@@ -325,23 +340,64 @@ initMenu(() => {
   ];
 });
 
+// ───────────────────────── WORD LISTS ─────────────────────────
+// Tick boxes on the start screen; any mix. Changing them means the next screen opened starts a
+// new game with the new words (for its whole room).
+const LISTS_STORE = 'cn.lists';
+let lists = [], listsChanged = false;
+const parse = line => { const [w, g] = line.split('#'); return { w: w.trim().toUpperCase(), group: (g || '').trim() }; };
+function chosenIds() {
+  const saved = local.get(LISTS_STORE);
+  const ids = Array.isArray(saved) ? saved.filter(id => lists.some(l => l.id === id)) : [];
+  return ids.length ? ids : lists.slice(0, 1).map(l => l.id);
+}
+function buildPool() {
+  const seen = new Map();
+  for (const l of lists) if (chosenIds().includes(l.id)) for (const e of l.words) if (!seen.has(e.w)) seen.set(e.w, e);
+  const addon = params.get('addon');
+  if (addon) for (const w of addon.split(',').map(x => x.trim().toUpperCase()).filter(Boolean)) if (!seen.has(w)) seen.set(w, { w, group: '' });
+  words = [...seen.values()];
+  $('listInfo').textContent = words.length >= 25
+    ? `${words.length} words to deal from.`
+    : 'Tick at least one list.';
+  $('btnBoard').disabled = $('btnKey').disabled = words.length < 25;
+}
+function renderLists() {
+  const ids = chosenIds();
+  $('listChips').innerHTML = '';
+  for (const l of lists) {
+    const chip = document.createElement('label'); chip.className = 'chip'; chip.title = l.note || '';
+    chip.innerHTML = `<input type="checkbox" value="${esc(l.id)}"${ids.includes(l.id) ? ' checked' : ''}> ${esc(l.name)} <small>${l.words.length}</small>`;
+    chip.querySelector('input').onchange = () => {
+      const now = [...$('listChips').querySelectorAll('input:checked')].map(i => i.value);
+      if (!now.length) { chip.querySelector('input').checked = true; return; }   // always at least one
+      local.set(LISTS_STORE, now); listsChanged = true; buildPool();
+    };
+    $('listChips').appendChild(chip);
+  }
+}
+// After the lists change, the next board or key opened starts a new game from them.
+function freshFromPicker() {
+  if (!listsChanged) return;
+  listsChanged = false;
+  board = dealBoard(); key = dealKey(); save();
+  if (room && room.code && room.code()) sendGame(); else pushOnJoin = true;
+}
+
 $('btnBoard').onclick = openBoard;
 $('btnKey').onclick = openKey;
 $('btnNewKey').onclick = newGame;
 
 try {
-  words = [...new Set(await lines('words.txt'))];
+  lists = await (await fetch('lists.json', { cache: 'no-cache' })).json();
+  await Promise.all(lists.map(async l => { l.words = (await lines(`lists/${l.id}.txt`)).map(parse); }));
 } catch {
-  words = [];
+  lists = [];
+  $('status').textContent = 'Could not load the word lists — open this page from a web server.';
 }
-const addon = params.get('addon');
-if (addon) words.push(...addon.split(',').map(s => s.trim().toUpperCase()).filter(Boolean));
+renderLists(); buildPool();
 loadImages();
 
-if (words.length < 25) {
-  $('btnBoard').disabled = true;
-  $('status').textContent = 'Could not load words.txt — open this page from a web server.';
-}
 if (location.hash === '#board' && words.length >= 25) openBoard();
-else if (location.hash === '#spymaster') openKey();
+else if (location.hash === '#spymaster' && words.length >= 25) openKey();
 else openChoose();
