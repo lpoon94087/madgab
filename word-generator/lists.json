@@ -21,6 +21,13 @@
     "tip": "Draw it. No letters, numbers or talking."
   },
   {
+    "id": "pictionary-phrases",
+    "name": "Pictionary: Phrases",
+    "group": "Games",
+    "family": "Pictionary",
+    "tip": "Draw it. No letters, numbers or talking."
+  },
+  {
     "id": "charades-easy",
     "name": "Charades: Easy",
     "group": "Games",
@@ -37,6 +44,13 @@
   {
     "id": "charades-hard",
     "name": "Charades: Hard",
+    "group": "Games",
+    "family": "Charades",
+    "tip": "Act it out. No talking, no pointing at things in the room."
+  },
+  {
+    "id": "charades-phrases",
+    "name": "Charades: Phrases",
     "group": "Games",
     "family": "Charades",
     "tip": "Act it out. No talking, no pointing at things in the room."
