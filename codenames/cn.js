@@ -1,40 +1,62 @@
 import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../shared/common.js';
 
 // Codenames: a board for the shared screen and a key card for the spymasters, kept in step
-// through a room (see ROOM below).
+// through a room (see ROOM below). The board knows the key, so tapping a card turns it to its colour.
 // Words come from words.txt; ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
-// listed in images.json. ?demo reveals random cards every second, for showing the board off.
-const VERSION = '1.4', RELEASED = '2026-11-19';
+// listed in images.json. ?demo turns a random card every second, for showing the board off.
+const VERSION = '2.1', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
 const show = name => { views.forEach(s => $(s).classList.toggle('hidden', s !== name)); $('btnRoom').classList.toggle('hidden', name === 'choose'); };
 
-// ───────────────────────── BOARD ─────────────────────────
-// A card's colour: 0 tan (not guessed yet), 1 grey (bystander), 2 red, 3 blue, 4 black (assassin).
-// Tapping flips it to the next colour; 4 seconds later a guessed card shows its picture.
-// board = { words, colors }: the 25 words in order and each card's colour. It's shared through the
-// room (see ROOM below), so a reload or a second board screen shows the same board.
-const REVEAL_MS = 4000;
 const BOARD_STORE = 'cn.board', KEY_STORE = 'cn.key', ROOM_STORE = 'cn.room';
 const local = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-let words = [], images = null, board = null, built = '', demo = null;
-// Which parts this screen brings to a room: the board once it has shown the board, the key once
-// it has shown the key. A room missing one of them gets it from the first screen that has it.
+
+// A game is the board and the key:
+//   board = { words, turned }  the 25 words in order, and 1 for each card that's been turned over
+//   key   = { first, cells }   who goes first, and what each of the 25 places is:
+//                              'red' | 'blue' | 'bystander' | 'assassin' (9 / 8 / 7 / 1)
+// Place i on the key is card i on the board. Both are shared through the room.
+let words = [], board = null, key = null;
+// Which parts this screen brings to a room. A board screen brings both (it needs the key to know
+// each card's colour); a spymaster screen brings the key. A room missing a part gets it from the
+// first screen that has it.
 const mine = { board: false, key: false };
+const validBoard = b => b && Array.isArray(b.words) && b.words.length === 25 && Array.isArray(b.turned) && b.turned.length === 25;
+const validKey = k => k && (k.first === 'red' || k.first === 'blue') && Array.isArray(k.cells) && k.cells.length === 25;
+const sameKey = (a, b) => a && b && a.first === b.first && a.cells.join() === b.cells.join();
+const dealBoard = () => ({ words: shuffle([...words]).slice(0, 25), turned: Array(25).fill(0) });
+function dealKey() {
+  const first = Math.random() < .5 ? 'red' : 'blue', second = first === 'red' ? 'blue' : 'red';
+  return { first, cells: shuffle([...Array(9).fill(first), ...Array(8).fill(second), ...Array(7).fill('bystander'), 'assassin']) };
+}
+function ensureGame() {
+  if (!key) { const k = local.get(KEY_STORE); key = validKey(k) ? { first: k.first, cells: k.cells } : dealKey(); local.set(KEY_STORE, key); }
+  if (!board) { const b = local.get(BOARD_STORE); board = validBoard(b) ? { words: b.words, turned: b.turned } : dealBoard(); local.set(BOARD_STORE, board); }
+}
+const save = () => { local.set(BOARD_STORE, board); local.set(KEY_STORE, key); };
+
+// ───────────────────────── BOARD ─────────────────────────
+// A face-down card is tan. Tap it when a team picks it and it turns to its colour from the key
+// (grey bystander, red, blue, black assassin); 4 seconds later it shows a picture.
+// Turning takes two taps, so a stray one does nothing: the first tap picks the card (it grows and
+// gets a border), the second turns it. Moving the mouse off it, or a tap anywhere else, lets it go.
+// The same two taps turn a turned card face down again, for a mistake.
+const REVEAL_MS = 4000;
+const COLOR = { bystander: 1, red: 2, blue: 3, assassin: 4 };
+let built = '', demo = null;
 const pics = { agent: [], agentbg: [], bystander: [], bystanderbg: [], black: [] };
 const next = { agent: 0, agentbg: 0, bystander: 0, bystanderbg: 0 };
 const pick = type => { const list = pics[type]; if (!list.length) return null; const url = list[next[type] % list.length]; next[type]++; return url; };
-const validBoard = b => b && Array.isArray(b.words) && b.words.length === 25 && Array.isArray(b.colors) && b.colors.length === 25;
+const colorOf = i => board.turned[i] && key ? COLOR[key.cells[i]] : 0;
 
 async function loadImages() {
-  try {
-    const r = await fetch('images.json', { cache: 'no-cache' });
-    images = await r.json();
-  } catch { images = {}; }
+  let images = {};
+  try { images = await (await fetch('images.json', { cache: 'no-cache' })).json(); } catch {}
   for (const type of Object.keys(pics)) pics[type] = shuffle((images[type] || []).map(f => 'img/' + f));
   // Fetch the pictures this board can show (at most 17 agents and 7 bystanders), so they're ready
   // when a card turns and saved for offline play.
@@ -43,12 +65,14 @@ async function loadImages() {
 }
 
 // Show a card in a colour: with the flip, or at once (instant) when the board is first drawn.
+// card.want is the colour it's heading for, so a change that arrives mid-flip isn't lost.
 function paint(card, color, instant = false) {
-  if (!instant && card.classList.contains('flipping')) { setTimeout(() => paint(card, color), 650); return; }
+  card.want = color;
+  if (!instant && card.classList.contains('flipping')) { setTimeout(() => { if (card.want === color) paint(card, color); }, 650); return; }
   clearTimeout(card.revealTimer);
   const apply = () => {
-    card.dataset.color = color;
     card.className = card.className.replace(/\bcolor-\d\b/, `color-${color}`);
+    card.setAttribute('aria-pressed', color ? 'true' : 'false');
     const bg = card.querySelector('.bg'), fg = card.querySelector('.fg');
     bg.style.backgroundImage = fg.style.backgroundImage = '';
     if (color === 0) return;
@@ -69,84 +93,87 @@ function paint(card, color, instant = false) {
   setTimeout(() => card.classList.remove('flipping'), 600);
 }
 
-const dealBoard = () => ({ words: shuffle([...words]).slice(0, 25), colors: Array(25).fill(0) });
+// The card picked by a first tap (-1: none). Only this screen sees it.
+let picked = -1;
+function pickCard(i) {
+  picked = i;
+  [...$('wordBoard').children].forEach((cell, j) => cell.firstChild.classList.toggle('picked', j === i));
+}
+document.addEventListener('click', e => { if (picked >= 0 && !e.target.closest('.cn-card')) pickCard(-1); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && picked >= 0) pickCard(-1); });
 
-// Draw the board's cards (only when its words change; colour changes go through paint).
+// Draw the board's cards when its words change; after that, repaint() turns the cards that changed.
 function buildBoard() {
   const el = $('wordBoard');
-  el.innerHTML = '';
+  el.innerHTML = ''; picked = -1;
   board.words.forEach((word, i) => {
     const wrap = document.createElement('div');
     wrap.className = 'cn-cell';
     const card = document.createElement('button');
     card.className = 'cn-card color-0';
-    card.dataset.color = '0';
     card.innerHTML = '<div class="bg"></div><div class="fg"></div><div class="tint"></div><span class="word"></span>';
     card.querySelector('.word').textContent = word;
-    card.onclick = () => { if (!demo) tap(i, (board.colors[i] + 1) % 5); };
+    card.onclick = () => { if (demo) return; if (picked === i) { pickCard(-1); tap(i); } else pickCard(i); };
+    card.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && picked === i) pickCard(-1); });
     wrap.appendChild(card);
     el.appendChild(wrap);
-    if (board.colors[i]) paint(card, board.colors[i], true);
+    paint(card, colorOf(i), true);
   });
   built = board.words.join('|');
 }
 const cardAt = i => $('wordBoard').children[i]?.firstChild;
-
-// A card changed on this screen: show it, save it and tell the room.
-function tap(i, color) {
-  board.colors[i] = color;
-  paint(cardAt(i), color);
-  local.set(BOARD_STORE, board);
-  renderMarks();
-  sendBoard(['colors']);
+function repaint() {
+  if (!mine.board) return;
+  if (built !== board.words.join('|')) return buildBoard();
+  board.words.forEach((_, i) => { const c = cardAt(i), want = colorOf(i); if (c && c.want !== want) paint(c, want); });
+}
+function renderLeft() {
+  if (!key || !board) return;
+  const left = team => key.cells.filter((c, i) => c === team && !board.turned[i]).length;
+  const order = key.first === 'red' ? ['red', 'blue'] : ['blue', 'red'];
+  $('boardLeft').innerHTML = order.map(t => `<span class="cn-left ${t}">${t === 'red' ? 'Red' : 'Blue'} <b>${left(t)}</b></span>`).join('');
+  const hit = key.cells.findIndex((c, i) => c === 'assassin' && board.turned[i]);
+  $('boardNote').textContent = hit >= 0 ? 'The assassin has been found!' : `${key.first === 'red' ? 'Red' : 'Blue'} goes first`;
 }
 
-// Demo: every second a random card turns grey, red or blue; the middle card may turn black.
+// A card turned on this screen (or turned back face down): save it and tell the room.
+function tap(i) {
+  board.turned[i] = board.turned[i] ? 0 : 1;
+  save(); repaint(); renderMarks(); renderLeft();
+  send({ turned: board.turned });
+}
+
+// Demo: every second a random face-down card turns.
 function startDemo() {
   demo = setInterval(() => {
-    const i = Math.floor(Math.random() * 25);
-    tap(i, i === 12 && Math.random() < .5 ? 4 : 1 + Math.floor(Math.random() * 3));
+    const down = board.turned.map((t, i) => t ? null : i).filter(i => i !== null);
+    if (down.length) tap(down[Math.floor(Math.random() * down.length)]);
   }, 1000);
 }
 
 function openBoard() {
-  if (!board) {
-    const saved = local.get(BOARD_STORE);
-    board = validBoard(saved) ? saved : dealBoard();
-    local.set(BOARD_STORE, board);
-  }
-  mine.board = true;
-  if (built !== board.words.join('|')) buildBoard();
+  ensureGame();
+  mine.board = mine.key = true;
+  repaint(); renderLeft();
   if (params.has('demo') && !demo) startDemo();
   history.replaceState(null, '', '#board');
   document.body.classList.add('cn-wide');
   show('board'); keepAwake(); startRoom(); fillRoom();
 }
-function newBoard() {
-  if (!confirm(others() ? `Deal a new board? Every screen in room ${roomState.code} gets it.` : 'Deal a new board? This one is cleared.')) return;
+
+// New game, from either screen: new words, a new key, every card face down, for the whole room.
+function newGame() {
+  if (!confirm(others() ? `Start a new game? Every screen in room ${roomState.code} gets new words and a new key.` : 'Start a new game? New words and a new key.')) return;
   next.agent = next.agentbg = next.bystander = next.bystanderbg = 0;
   for (const type of Object.keys(pics)) shuffle(pics[type]);
-  board = dealBoard(); local.set(BOARD_STORE, board);
-  buildBoard(); renderMarks();
-  sendBoard(['words', 'colors']);
+  board = dealBoard(); key = dealKey(); save();
+  repaint(); renderKey(); renderLeft();
+  send({ words: board.words, turned: board.turned, first: key.first, cells: key.cells });
 }
 
 // ───────────────────────── SPYMASTER KEY ─────────────────────────
-// 9 cards for the team that goes first, 8 for the other, 7 bystanders, 1 assassin.
-// The frame's colour says who goes first. Each square matches the board card in the same place;
-// once that card has been turned (any colour but tan), the square gets a white dot.
-let key = null;
-const validKey = k => k && (k.first === 'red' || k.first === 'blue') && Array.isArray(k.cells) && k.cells.length === 25;
-function dealKey() {
-  const first = Math.random() < .5 ? 'red' : 'blue', second = first === 'red' ? 'blue' : 'red';
-  const cells = shuffle([...Array(9).fill(first), ...Array(8).fill(second), ...Array(7).fill('bystander'), 'assassin']);
-  return { first, cells };
-}
-function setKey(k) {
-  key = { first: k.first, cells: k.cells };
-  local.set(KEY_STORE, key);
-  renderKey();
-}
+// 9 places for the team that goes first, 8 for the other, 7 bystanders, 1 assassin. The frame's
+// colour says who goes first. A white dot marks each place whose card is turned on the board.
 function renderKey() {
   if (!key) return;
   $('keyCard').className = `cn-key first-${key.first}`;
@@ -156,58 +183,54 @@ function renderKey() {
   renderMarks();
 }
 function renderMarks() {
-  const colors = board ? board.colors : [];
-  [...$('keyCard').children].forEach((spot, i) => spot.classList.toggle('turned', !!colors[i]));
+  const turned = board ? board.turned : [];
+  [...$('keyCard').children].forEach((spot, i) => spot.classList.toggle('turned', !!turned[i]));
 }
 
 function openKey() {
-  if (!key) { const saved = local.get(KEY_STORE); setKey(validKey(saved) ? saved : dealKey()); }
+  ensureGame();
   mine.key = true;
+  renderKey();
   history.replaceState(null, '', '#spymaster');
   document.body.classList.remove('cn-wide');
   show('key'); keepAwake(); startRoom(); fillRoom();
-}
-function newKey() {
-  if (!confirm(others() ? `Deal a new key card? Every screen in room ${roomState.code} gets it.` : 'Deal a new key card?')) return;
-  setKey(dealKey());
-  sendKey();
 }
 
 // ───────────────────────── ROOM ─────────────────────────
 // Every screen, board or spymaster, is in a room (shared/rooms.js shareRoom), shown as a code in
 // the top right. A screen starts in a random room of its own, so a game can start straight away.
-// Tap the code and type another screen's code to join its room: the room's board and key then show
-// on this screen too, and whatever the room lacks (a board, a key) this screen fills in.
-// The room holds: words, colors (the board) and first, cells (the key).
+// Tap the code and type another screen's code to join its game: the room's board and key then
+// show on this screen too, and whatever the room lacks (a board, a key) this screen fills in.
+// The room holds: words, turned (the board) and first, cells (the key).
 // With no internet each screen works on its own.
 let room = null, last = null, roomState = { text: 'Connecting…', on: false, count: 0, code: '' };
 const others = () => roomState.code && roomState.count > 1;
 const send = part => { if (room && room.code && room.code()) room.send(part).catch(() => {}); };
-const sendBoard = fields => { if (board) send(Object.fromEntries(fields.map(f => [f, board[f]]))); };
-const sendKey = () => { if (key) send({ first: key.first, cells: key.cells }); };
 const ownParts = () => ({
-  ...(mine.board && board ? { words: board.words, colors: board.colors } : {}),
-  ...(mine.key && key ? { first: key.first, cells: key.cells } : {}),
+  ...(mine.board ? { words: board.words, turned: board.turned } : {}),
+  ...(mine.key ? { first: key.first, cells: key.cells } : {}),
 });
 // Give the room the parts it doesn't have yet.
 function fillRoom() {
   if (!last || !room || !room.code) return;
-  if (mine.board && board && !validBoard(last)) sendBoard(['words', 'colors']);
-  if (mine.key && key && !validKey(last)) sendKey();
+  const part = {};
+  if (mine.board && !validBoard(last)) Object.assign(part, { words: board.words, turned: board.turned });
+  if (mine.key && !validKey(last)) Object.assign(part, { first: key.first, cells: key.cells });
+  if (Object.keys(part).length) send(part);
 }
 
 function onRoomState(s) {
   last = s;
   if (!s) return;
-  if (validBoard(s)) {
-    const sameWords = board && board.words.join('|') === s.words.join('|');
-    if (!sameWords) board = { words: [...s.words], colors: [...s.colors] };
-    else s.colors.forEach((c, i) => { if (board.colors[i] !== c) { board.colors[i] = c; if (built === board.words.join('|')) paint(cardAt(i), c); } });
-    local.set(BOARD_STORE, board);
-    if (mine.board && built !== board.words.join('|')) buildBoard();
-  }
-  if (validKey(s) && (!key || key.first !== s.first || key.cells.join() !== s.cells.join())) setKey(s);
-  renderMarks();
+  const newKey = validKey(s) && !sameKey(key, s);
+  if (newKey) key = { first: s.first, cells: [...s.cells] };
+  if (validBoard(s)) board = { words: [...s.words], turned: [...s.turned] };
+  // A room with a key but no board: a board screen joining it starts face down (its turned cards
+  // belonged to a different key), and a spymaster screen shows no dots.
+  else if (board && (newKey || !mine.board)) board.turned = Array(25).fill(0);
+  save();
+  if (newKey) renderKey();
+  repaint(); renderMarks(); renderLeft();
   fillRoom();
 }
 
@@ -293,8 +316,9 @@ const fullScreen = () => { try { document.documentElement.requestFullscreen(); }
 initMenu(() => {
   const view = views.find(v => !$(v).classList.contains('hidden'));
   return [
-    ...(view === 'board' ? [['New board', newBoard], ...(document.fullscreenEnabled ? [['Full screen', fullScreen]] : []), ['Spymaster key', openKey]] : []),
-    ...(view === 'key' ? [['New key', newKey], ['Board', openBoard]] : []),
+    ...(view !== 'choose' ? [['New game', newGame]] : []),
+    ...(view === 'board' ? [...(document.fullscreenEnabled ? [['Full screen', fullScreen]] : []), ['Spymaster key', openKey]] : []),
+    ...(view === 'key' ? [['Board', openBoard]] : []),
     ...(view !== 'choose' ? [['Room', openRoomDlg]] : []),
     ...(view !== 'choose' ? [['Change screen', openChoose]] : []),
     ['About', showAbout],
@@ -303,7 +327,7 @@ initMenu(() => {
 
 $('btnBoard').onclick = openBoard;
 $('btnKey').onclick = openKey;
-$('btnNewKey').onclick = newKey;
+$('btnNewKey').onclick = newGame;
 
 try {
   words = [...new Set(await lines('words.txt'))];

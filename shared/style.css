@@ -205,3 +205,13 @@ body.cn header .status:empty { display: none; }
 .cn-spot { position: relative; }
 .cn-spot.turned::after { content: ''; position: absolute; top: 7%; right: 7%; width: 22%; aspect-ratio: 1; border-radius: 50%;
   background: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,.35); }
+/* Codenames board: agents left for each team */
+.cn-status { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: clamp(15px, 2vw, 22px); }
+.cn-left { font-weight: 700; margin-right: 18px; }
+.cn-left b { font-size: 1.4em; margin-left: 4px; }
+.cn-left.red { color: var(--cnRed); }
+.cn-left.blue { color: var(--cnBlue); }
+/* The card picked by a first tap: a second tap turns it */
+.cn-cell:has(.picked) { z-index: 5; }
+.cn-card.picked, .cn-card.picked:hover { transform: scale(1.1);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 7px var(--accent), 0 12px 28px rgba(0,0,0,.55); }
