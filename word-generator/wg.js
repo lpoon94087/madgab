@@ -1,4 +1,4 @@
-import { $, store, lines, keepAwake, initMenu, initAbout, createRounds } from '../shared/common.js';
+import { $, ask, store, lines, keepAwake, initMenu, initAbout, createRounds } from '../shared/common.js';
 import { hostRoom, viewRoom, roundState, savedRoom } from '../shared/rooms.js';
 
 // Word Generator: words for Charades, Pictionary, Password and the like.
@@ -6,7 +6,7 @@ import { hostRoom, viewRoom, roundState, savedRoom } from '../shared/rooms.js';
 // "Just words" hands out one word at a time; timed rounds use the shared round engine.
 // Like Mad Gab, a device is either the moderator (every control; works on its own too)
 // or a read-only viewer of the moderator's word, synced through a room (shared/rooms.js).
-const VERSION = '1.9', RELEASED = '2026-11-19';
+const VERSION = '1.10', RELEASED = '2026-11-19';
 
 const sections = ['home', 'setup', 'free', 'ready', 'play', 'over', 'join', 'viewer'];
 let at = 'home', room = null, role = null;
@@ -136,7 +136,7 @@ function viewState() {
   });
 }
 async function leaveGame() {
-  if (!confirm('Leave this game? Viewers will see that it has ended.')) return;
+  if (!await ask('Viewers will see that it has ended.', { title: 'Leave this game?', ok: 'Leave' })) return;
   if (G) G.stop();
   if (room) await room.close();
   location.href = location.pathname;

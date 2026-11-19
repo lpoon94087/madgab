@@ -1,11 +1,11 @@
-import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../shared/common.js';
+import { $, ask, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../shared/common.js';
 
 // Codenames: a board for the shared screen and a key card for the spymasters, kept in step
 // through a room (see ROOM below). The board knows the key, so tapping a card turns it to its colour.
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.19', RELEASED = '2026-11-19';
+const VERSION = '2.21', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -242,7 +242,7 @@ function fanfare() {
   } catch {}
 }
 $('btnFinaleClose').onclick = closeFinale;
-$('btnFinaleNew').onclick = () => { closeFinale(); newGame(); };
+$('btnFinaleNew').onclick = () => { closeFinale(); newGame({ askFirst: false }); };
 $('finale').addEventListener('click', e => { if (e.target === $('finale')) closeFinale(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFinale(); });
 
@@ -272,8 +272,9 @@ function openBoard() {
 }
 
 // New game, from either screen: new words, a new key, every card face down, for the whole room.
-function newGame() {
-  if (!confirm(others() ? `Start a new game? Every screen in room ${roomState.code} gets new words and a new key.` : 'Start a new game? New words and a new key.')) return;
+// It asks first, except from the finale (that game is over anyway).
+async function newGame({ askFirst = true } = {}) {
+  if (askFirst && !await ask(others() ? `Every screen in room ${roomState.code} gets new words and a new key.` : 'New words and a new key.', { title: 'Start a new game?', ok: 'New game' })) return;
   next.agent = next.agentbg = next.bystander = next.bystanderbg = 0;
   for (const type of Object.keys(pics)) shuffle(pics[type]);
   board = dealBoard(); key = dealKey(); save();

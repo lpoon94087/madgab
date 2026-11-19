@@ -71,7 +71,7 @@ After one visit with internet, every game works on one device with no connection
 
 ## Code
 
-- `shared/common.js` — the round engine (`createRounds`: teams, scores, a shuffled deck saved on the device so cards don't repeat until you reshuffle, the clock, Got It / Skip, results), plus the menu, the About box, beeps and the screen wake lock.
+- `shared/common.js` — the round engine (`createRounds`: teams, scores, a shuffled deck saved on the device so cards don't repeat until you reshuffle, the clock, Got It / Skip, results), plus the menu, the About box, `ask()` (the yes/no box every game uses instead of the browser's `confirm()`, which can hide behind a full-screen page), beeps and the screen wake lock.
 - `shared/rooms.js` — rooms for games with viewers (Mad Gab, Word Generator): the moderator claims a 4-letter code and sends what viewers should see; the viewer screen joins and shows it read-only. `shareRoom` is a room of equal devices that all show and change the same state, each updating only its own fields (Codenames' board and key). Each room is tagged with its game, so a code from one game can't be joined from another.
 - `shared/style.css` — styles for every page.
 - `<game>/index.html` and `<game>/<game>.js` — the game's screens and whatever is specific to it (Mad Gab's rooms and viewer, its demo, its Easy/Hard filter).

@@ -1,4 +1,4 @@
-import { $, esc, store, lines, shuffle, keepAwake, initMenu, initAbout, beep } from '../shared/common.js';
+import { $, ask, esc, store, lines, shuffle, keepAwake, initMenu, initAbout, beep } from '../shared/common.js';
 import { hostRoom, viewRoom, savedRoom } from '../shared/rooms.js';
 
 // Password: two teams, each a clue-giver and a guesser. The team that's guessing gets a
@@ -8,7 +8,7 @@ import { hostRoom, viewRoom, savedRoom } from '../shared/rooms.js';
 //   simple   a word is worth 1; play a set number of rounds, each team starting one word a round
 // The moderator runs it; viewers are a clue-giver screen (with the word) or a scoreboard
 // (without it), synced through a room (shared/rooms.js).
-const VERSION = '1.1', RELEASED = '2026-11-17';
+const VERSION = '1.2', RELEASED = '2026-11-19';
 const START_VALUE = 10, MAX_CLUES = 10;
 
 const sections = ['home', 'join', 'viewer', 'setup', 'play', 'done', 'over'];
@@ -111,8 +111,8 @@ function startGame() {
   keepAwake();
 }
 function playAgain() { act(() => { G.teams.forEach(t => t.score = 0); G.starter = 0; G.played = 0; newWord(); }); }
-function newGame() {
-  if (!confirm('Start a new game? Both teams go back to 0.')) return;
+async function newGame() {
+  if (!await ask('Both teams go back to 0.', { title: 'Start a new game?', ok: 'New game' })) return;
   act(() => {
     const k = G; G = fresh();
     G.teams = k.teams.map(t => ({ name: t.name, score: 0 })); G.mode = k.mode; G.target = k.target; G.rounds = k.rounds;
@@ -162,7 +162,7 @@ function viewState() {
 }
 
 async function leaveGame() {
-  if (!confirm('Leave this game? Viewers will see that it has ended.')) return;
+  if (!await ask('Viewers will see that it has ended.', { title: 'Leave this game?', ok: 'Leave' })) return;
   if (room) await room.close();
   st.set('game', null);
   location.href = location.pathname;

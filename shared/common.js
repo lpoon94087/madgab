@@ -46,12 +46,42 @@ export function beep(freq = 880, dur = 0.12, vol = 0.2) {
   } catch {}
 }
 
+// ───────────────────────── ASK ─────────────────────────
+// A yes/no question shown in the page, used instead of the browser's confirm() everywhere: a
+// browser dialog can hide behind a full-screen page, and it looks different on every device.
+// Resolves true for OK and false for Cancel (or Escape, or a tap outside the box).
+//   ask('Every team goes back to 0.', { title: 'Start a new game?', ok: 'New game' })
+let askBox = null;
+export function ask(text, { title = 'Are you sure?', ok = 'OK', cancel = 'Cancel' } = {}) {
+  if (!askBox) {
+    askBox = document.createElement('div');
+    askBox.className = 'overlay hidden'; askBox.style.zIndex = 40;
+    askBox.setAttribute('role', 'dialog'); askBox.setAttribute('aria-modal', 'true');
+    askBox.innerHTML = `<div class="panel"><h2 class="ask-title"></h2><p class="muted ask-text" style="font-size:15px"></p>
+      <div class="row"><button class="ask-cancel"></button><button class="primary ask-ok"></button></div></div>`;
+    document.body.appendChild(askBox);
+  }
+  const q = sel => askBox.querySelector(sel);
+  q('.ask-title').textContent = title; q('.ask-text').textContent = text || '';
+  q('.ask-text').classList.toggle('hidden', !text);
+  q('.ask-ok').textContent = ok; q('.ask-cancel').textContent = cancel;
+  return new Promise(done => {
+    const finish = v => { askBox.classList.add('hidden'); document.removeEventListener('keydown', key, true); done(v); };
+    const key = e => { if (e.key === 'Escape') { e.stopPropagation(); finish(false); } };
+    q('.ask-ok').onclick = () => finish(true);
+    q('.ask-cancel').onclick = () => finish(false);
+    askBox.onclick = e => { if (e.target === askBox) finish(false); };
+    document.addEventListener('keydown', key, true);
+    askBox.classList.remove('hidden'); q('.ask-ok').focus();
+  });
+}
+
 // ───────────────────────── RELOAD ─────────────────────────
 // A web app saved to a phone's home screen has no refresh button, and GitHub Pages lets the
 // phone keep each file for 10 minutes. Reload asks the server for fresh copies of the page and
 // every file it loaded, then reloads, so the latest version shows straight away.
 export async function reloadLatest() {
-  if (!confirm('Reload to get the latest version of ULP Games?')) return;
+  if (!await ask('Fetches the newest copy of every game.', { title: 'Reload ULP Games?', ok: 'Reload' })) return;
   // Check for a new offline copy too (sw.js), then refresh this page's files past every cache.
   try { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch {}
   const urls = new Set([location.href.split('#')[0]]);
@@ -74,7 +104,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http'))
 // confirm before going Home, or '' to go straight there (e.g. ask only while a game is running).
 const HOME = new URL('../', import.meta.url).href;
 export function initMenu(items, { home = true, leaving } = {}) {
-  const goHome = () => { const q = leaving && leaving(); if (q && !confirm(q)) return; location.href = HOME; };
+  const goHome = async () => { const q = leaving && leaving(); if (q && !await ask('', { title: q, ok: 'Go home' })) return; location.href = HOME; };
   const btn = $('btnMenu'), m = $('menu');
   const close = () => { m.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
   btn.onclick = e => {
@@ -260,8 +290,8 @@ export function createRounds(o) {
   }
   // New game: stop any round, every score back to 0, first team up, back to setup.
   // The deck carries on; reshuffle puts every card back.
-  function newGame() {
-    if (!confirm('Start a new game? Any round in progress stops, and every team goes back to 0.')) return;
+  async function newGame() {
+    if (!await ask('Any round in progress stops, and every team goes back to 0.', { title: 'Start a new game?', ok: 'New game' })) return;
     stop(); syncTeams(); G.teams.forEach(t => t.score = 0); G.current = 0; saveScores();
     G.phase = 'setup'; G.results = []; updateDeckInfo(); renderScores(); o.show('setup'); changed();
   }
@@ -282,7 +312,7 @@ export function createRounds(o) {
   $('btnGot').onclick = () => answer(true);
   $('btnSkip').onclick = () => answer(false);
   $('btnPause').onclick = togglePause;
-  $('btnEnd').onclick = () => { if (confirm('End this round now?')) endRound(); };
+  $('btnEnd').onclick = async () => { if (await ask('', { title: 'End this round now?', ok: 'End round' })) endRound(); };
   $('btnNext').onclick = nextRound;
   $('optTeams').onchange = () => { syncTeams(); renderScores(); changed(); };
   $('optTime').onchange = updateDeckInfo;
@@ -293,6 +323,6 @@ export function createRounds(o) {
     // Draw outside a timed round (the word generator's free play). Uses the same saved deck.
     draw: () => { const c = drawCard(); updateDeckInfo(); return c; },
     left: () => G.deck.filter(fits).length,
-    reshuffle: () => { if (confirm('Reshuffle all cards back into the deck?')) reshuffle(); },
+    reshuffle: async () => { if (await ask('Every card goes back into the deck.', { title: 'Reshuffle the deck?', ok: 'Reshuffle' })) reshuffle(); },
   });
 }
