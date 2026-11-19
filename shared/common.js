@@ -52,12 +52,19 @@ export function beep(freq = 880, dur = 0.12, vol = 0.2) {
 // every file it loaded, then reloads, so the latest version shows straight away.
 export async function reloadLatest() {
   if (!confirm('Reload to get the latest version of ULP Games?')) return;
+  // Check for a new offline copy too (sw.js), then refresh this page's files past every cache.
+  try { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch {}
   const urls = new Set([location.href.split('#')[0]]);
   for (const r of performance.getEntriesByType('resource'))
     if (r.name.startsWith(location.origin)) urls.add(r.name);
   await Promise.all([...urls].map(u => fetch(u, { cache: 'reload' }).catch(() => {})));
   location.reload();
 }
+
+// Offline: sw.js keeps a copy of the whole site, so every game works on one device with no internet.
+// Pages come from that copy at once and are refreshed in the background for the next visit.
+if ('serviceWorker' in navigator && location.protocol.startsWith('http'))
+  navigator.serviceWorker.register(new URL('../sw.js', import.meta.url)).catch(() => {});
 
 // ───────────────────────── MENU ─────────────────────────
 // Tapping the game's name (#btnMenu) opens #menu. items() returns [label, fn, className?][]

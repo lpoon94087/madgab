@@ -63,8 +63,17 @@ export function hostRoom({ game, state }) {
   const ME = tabId(game);
   let code = null;
 
+  // With no internet there is no room, but the game still works on this device.
+  const ALONE = 'This device works on its own; viewers need internet.';
+  function start() {
+    if (navigator.onLine) return open(savedRoom(game) || newCode());
+    setStatus('Offline', false);
+    $('viewerCount').textContent = `You're offline. ${ALONE}`;
+    addEventListener('online', start, { once: true });
+  }
   async function open(c) {
     setStatus('Opening room…', false);
+    const slow = setTimeout(() => { $('viewerCount').textContent = `Can't reach the game database yet. ${ALONE}`; }, 8000);
     let res;
     try {
       // Claim the code unless another moderator is using it (claims go stale after 12 hours).
@@ -76,7 +85,7 @@ export function hostRoom({ game, state }) {
       setStatus('Sync error', false);
       $('viewerCount').textContent = 'Could not reach the game database: ' + (e.message || e);
       return;
-    }
+    } finally { clearTimeout(slow); }
     if (!res.committed) return open(newCode());
     code = c; session.set(game + '.code', c);
     $('roomCode').textContent = c;
@@ -101,7 +110,7 @@ export function hostRoom({ game, state }) {
     session.remove(game + '.code');
   }
 
-  open(savedRoom(game) || newCode());
+  start();
   return { send, close };
 }
 
@@ -122,6 +131,12 @@ export function viewRoom({ game, show, render: custom, params = { view: 'join', 
     code = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (code.length !== 4) { $('joinMsg').textContent = 'The code is 4 letters.'; return; }
     show('join'); $('joinCode').value = code;
+    if (!navigator.onLine) {
+      $('joinMsg').textContent = "You're offline. Joining a room needs internet; this page will join when you're back online.";
+      setStatus('Offline', false);
+      addEventListener('online', () => join(code), { once: true });
+      return;
+    }
     $('joinMsg').textContent = 'Connecting…'; setStatus('Connecting…', false);
     unsubs.forEach(u => u()); unsubs = [];
     const me = ref(db, `rooms/${code}/viewers/${ME}`);

@@ -48,6 +48,12 @@ Words for Charades, Pictionary, describe-it games and anything else. Choose *Mod
 
 Words don't repeat until the chosen lists run out. The lists are `word-generator/lists/<id>.txt`, one word per line; `word-generator/lists.json` gives each its name, its group in the picker (*Games* or *Topics*), its family (lists in the same family are shown together under one heading with an *All* toggle; lists with no family go under their group) and the tip shown with it. To add a list, add a file and an entry. The lists were written for this site; the Pictionary and Charades lists also include words picked from the 12dicts word list (2of12), filtered to ones people know and can draw or act out. *Pictionary: Phrases* and *Charades: Phrases* hold two- to five-word phrases (things to draw, and actions such as "walking the dog") that aren't in any other list.
 
+## Offline
+
+After one visit with internet, every game works on one device with no connection: `sw.js` (a service worker) keeps a copy of the whole site, including the Firebase and QR code libraries. Rooms still need internet, so offline the moderator's room panel says *Offline* and a viewer waits until the device is back online. Pages come from the saved copy at once and are refreshed in the background, so a change shows on the next visit; the start page's *Reload* gets it right away.
+
+`sw.js` lists every file it saves and a version made from their contents. `tools/stamp-sw.py` rewrites both; run it before committing (the local pre-commit hook in `.git/hooks/pre-commit` does it and stages `sw.js`). A new file the site serves is picked up as long as it is under `shared/` or a game's folder.
+
 ## Code
 
 - `shared/common.js` — the round engine (`createRounds`: teams, scores, a shuffled deck saved on the device so cards don't repeat until you reshuffle, the clock, Got It / Skip, results), plus the menu, the About box, beeps and the screen wake lock.
