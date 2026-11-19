@@ -220,3 +220,31 @@ body.cn #choose { display: flex; flex-direction: column; gap: 16px; }
 .cn-status.in-head { flex: 1; min-width: 0; flex-wrap: nowrap; justify-content: center; gap: 24px; margin: 0 12px; font-size: clamp(15px, 1.8vw, 22px); white-space: nowrap; }
 .cn-status.in-head .cn-left:last-of-type { margin-right: 0; }
 @media (max-width: 700px) { body.cn header { flex-wrap: wrap; } .cn-status.in-head { order: 3; flex-basis: 100%; margin: 2px 0 0; justify-content: space-between; } }
+
+/* Codenames finale: a big spinning, zooming banner when a game ends */
+.cn-finale { z-index: 30; overflow: hidden; flex-direction: column; }
+.cn-finale.red { background: radial-gradient(circle, rgba(212,77,77,.35), rgba(0,0,0,.8) 70%); }
+.cn-finale.blue { background: radial-gradient(circle, rgba(77,123,212,.35), rgba(0,0,0,.8) 70%); }
+.cn-finale.assassin { background: radial-gradient(circle, rgba(120,0,0,.55), rgba(0,0,0,.92) 70%); }
+.finale-box { position: relative; z-index: 2; text-align: center; display: flex; flex-direction: column; gap: 18px; }
+.finale-text { font-weight: 900; text-transform: uppercase; letter-spacing: .04em; line-height: 1;
+  font-size: clamp(56px, 15vw, 220px); -webkit-text-stroke: clamp(2px, .4vw, 6px) #fff; paint-order: stroke fill;
+  animation: cn-spin-zoom 1s cubic-bezier(.2,.9,.3,1.2) both, cn-pulse 1.6s ease-in-out 1s infinite; }
+.cn-finale.red .finale-text { color: var(--cnRed); text-shadow: 0 0 40px rgba(212,77,77,.8); }
+.cn-finale.blue .finale-text { color: var(--cnBlue); text-shadow: 0 0 40px rgba(77,123,212,.8); }
+.cn-finale.assassin .finale-text { color: #111; -webkit-text-stroke-color: #ff3b3b; text-shadow: 0 0 50px rgba(255,0,0,.9); }
+.cn-finale.assassin .finale-box { animation: cn-shake .5s ease-in-out 1s 2; }
+.finale-sub { font-size: clamp(18px, 3vw, 32px); font-weight: 700; color: #fff; opacity: 0; animation: cn-fade .5s ease 1s forwards; }
+.cn-finale .row { opacity: 0; animation: cn-fade .5s ease 1.3s forwards; }
+@keyframes cn-spin-zoom { 0% { transform: scale(0) rotate(-720deg); opacity: 0; } 70% { transform: scale(1.15) rotate(8deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+@keyframes cn-pulse { 50% { transform: scale(1.06); } }
+@keyframes cn-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-18px); } 40% { transform: translateX(16px); } 60% { transform: translateX(-12px); } 80% { transform: translateX(8px); } }
+@keyframes cn-fade { to { opacity: 1; } }
+.confetti { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.confetti i { position: absolute; top: -5vh; width: 12px; height: 18px; border-radius: 2px; opacity: .9; animation: cn-fall linear both; }
+@keyframes cn-fall { to { top: 105vh; transform: rotate(720deg) translateX(40px); } }
+@media (prefers-reduced-motion: reduce) {
+  .finale-text { animation: cn-fade .6s ease both; }
+  .cn-finale.assassin .finale-box { animation: none; }
+  .confetti { display: none; }
+}

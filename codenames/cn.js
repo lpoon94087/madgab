@@ -5,7 +5,7 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.13', RELEASED = '2026-11-19';
+const VERSION = '2.16', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -99,6 +99,29 @@ async function loadImages() {
   for (const url of want) new Image().src = url;
 }
 
+// Sounds when a card turns over (board screens only): a rising chime for a red or blue agent,
+// a soft bonk for a bystander, a falling buzz for the assassin. Board menu: Sound on/off.
+const SOUND_STORE = 'cn.sound';
+const soundOn = () => local.get(SOUND_STORE) !== false;
+let actx = null;
+function tone(freq, start, dur, { type = 'sine', vol = .18, to } = {}) {
+  const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + start;
+  o.type = type; o.frequency.setValueAtTime(freq, t);
+  if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur + .02);
+}
+function cardSound(color) {
+  if (!soundOn() || !color || $('board').classList.contains('hidden')) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    if (color === 2 || color === 3) [784, 988, 1319].forEach((f, i) => tone(f, i * .08, .35, { vol: .16 }));   // agent: G5 B5 E6
+    else if (color === 1) tone(330, 0, .22, { type: 'triangle', vol: .22, to: 220 });                         // bystander
+    else if (color === 4) { tone(220, 0, 1.1, { type: 'sawtooth', vol: .14, to: 55 }); tone(110, 0, 1.2, { vol: .2, to: 40 }); }  // assassin
+  } catch {}
+}
+
 // Show a card in a colour: with the flip, or at once (instant) when the board is first drawn.
 // card.want is the colour it's heading for, so a change that arrives mid-flip isn't lost.
 function paint(card, color, instant = false) {
@@ -124,7 +147,7 @@ function paint(card, color, instant = false) {
   card.classList.remove('revealed');
   if (instant) return apply();
   card.classList.add('flipping');
-  setTimeout(apply, 300);
+  setTimeout(() => { apply(); cardSound(color); }, 300);
   setTimeout(() => card.classList.remove('flipping'), 600);
 }
 
@@ -167,9 +190,54 @@ function renderLeft() {
   const left = team => key.cells.filter((c, i) => c === team && !board.turned[i]).length;
   const order = key.first === 'red' ? ['red', 'blue'] : ['blue', 'red'];
   $('boardLeft').innerHTML = order.map(t => `<span class="cn-left ${t}">${t === 'red' ? 'Red' : 'Blue'} <b>${left(t)}</b></span>`).join('');
-  const hit = key.cells.findIndex((c, i) => c === 'assassin' && board.turned[i]);
-  $('boardNote').textContent = hit >= 0 ? 'The assassin has been found!' : `${key.first === 'red' ? 'Red' : 'Blue'} goes first`;
+  // Hidden for now: the note beside the counts ("Red goes first", or "The assassin has been found!").
+  // To bring it back, uncomment these two lines.
+  // const hit = key.cells.findIndex((c, i) => c === 'assassin' && board.turned[i]);
+  // $('boardNote').textContent = hit >= 0 ? 'The assassin has been found!' : `${key.first === 'red' ? 'Red' : 'Blue'} goes first`;
+  checkFinale(left);
 }
+
+// ───────────────────────── FINALE ─────────────────────────
+// When a game ends, every screen in the room shows a big overlay: "RED WINS!" (that team's last
+// card turned; confetti and a fanfare) or "ASSASSIN!" (a red glow and a shake). It shows only at
+// the moment the game ends, not when a screen opens or reloads an ended game; turning the last
+// card back face down (a mis-tap) just carries on.
+let finaleSeen = null;   // { game, end } as last rendered
+function endOf(left) {
+  if (key.cells.some((c, i) => c === 'assassin' && board.turned[i])) return 'assassin';
+  return ['red', 'blue'].find(t => left(t) === 0) || '';
+}
+function checkFinale(left) {
+  const game = board.words.join('|') + key.cells.join(), end = endOf(left);
+  const was = finaleSeen;
+  finaleSeen = { game, end };
+  if (!end) { if (was && was.game !== game) closeFinale(); return; }
+  if (!was || was.game !== game || was.end === end) return;   // first look, or nothing new
+  setTimeout(() => showFinale(end), 700);                     // after the card has flipped
+}
+function showFinale(end) {
+  const box = $('finale'), win = end !== 'assassin';
+  box.className = `overlay cn-finale ${end}`;
+  $('finaleText').textContent = win ? `${end === 'red' ? 'Red' : 'Blue'} wins!` : 'Assassin!';
+  $('finaleSub').textContent = win ? 'Every agent found.' : 'Game over.';
+  $('confetti').innerHTML = win ? Array.from({ length: 60 }, () => {
+    const c = end === 'red' ? ['#d44d4d', '#ff8a80', '#fff'] : ['#4d7bd4', '#90b4ff', '#fff'];
+    return `<i style="left:${Math.random() * 100}%;background:${c[Math.floor(Math.random() * 3)]};animation-delay:${(Math.random() * 1.5).toFixed(2)}s;animation-duration:${(2.5 + Math.random() * 2).toFixed(2)}s;transform:rotate(${Math.floor(Math.random() * 360)}deg)"></i>`;
+  }).join('') : '';
+  if (win && soundOn() && !$('board').classList.contains('hidden')) fanfare();
+  $('btnFinaleNew').focus();
+}
+function closeFinale() { $('finale').classList.add('hidden'); $('confetti').innerHTML = ''; }
+function fanfare() {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .14, i === 3 ? .9 : .25, { type: 'triangle', vol: .2 }));
+  } catch {}
+}
+$('btnFinaleClose').onclick = closeFinale;
+$('btnFinaleNew').onclick = () => { closeFinale(); newGame(); };
+$('finale').addEventListener('click', e => { if (e.target === $('finale')) closeFinale(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFinale(); });
 
 // A card turned on this screen (or turned back face down): save it and tell the room.
 function tap(i) {
@@ -355,7 +423,8 @@ initMenu(() => {
   const view = views.find(v => !$(v).classList.contains('hidden'));
   return [
     ...(view !== 'choose' ? [['New game', newGame]] : []),
-    ...(view === 'board' ? [...(document.fullscreenEnabled ? [['Full screen', fullScreen]] : []), ['Spymaster key', openKey]] : []),
+    ...(view === 'board' ? [...(document.fullscreenEnabled ? [['Full screen', fullScreen]] : []),
+      [`Sound: ${soundOn() ? 'on' : 'off'}`, () => local.set(SOUND_STORE, !soundOn())], ['Spymaster key', openKey]] : []),
     ...(view === 'key' ? [['Board', openBoard]] : []),
     ...(view !== 'choose' ? [['Room', openRoomDlg]] : []),
     ...(view !== 'choose' ? [['Change screen', openChoose]] : []),
