@@ -5,7 +5,7 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.16', RELEASED = '2026-11-19';
+const VERSION = '2.18', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -69,11 +69,17 @@ function dealKey() {
   const first = Math.random() < .5 ? 'red' : 'blue', second = first === 'red' ? 'blue' : 'red';
   return { first, cells: shuffle([...Array(9).fill(first), ...Array(8).fill(second), ...Array(7).fill('bystander'), 'assassin']) };
 }
+// A screen picks up where it left off (its game and its room) only if it was used in the last
+// 6 hours; after that it starts fresh, so tomorrow's game isn't yesterday's room.
+const ACTIVE_STORE = 'cn.active', FRESH_AFTER = 6 * 3600e3;
+const stale = Date.now() - (local.get(ACTIVE_STORE) || 0) > FRESH_AFTER;
+const touch = () => local.set(ACTIVE_STORE, Date.now());
 function ensureGame() {
+  if (stale && !key && !board) { key = dealKey(); board = dealBoard(); save(); }
   if (!key) { const k = local.get(KEY_STORE); key = validKey(k) ? { first: k.first, cells: k.cells } : dealKey(); local.set(KEY_STORE, key); }
   if (!board) { const b = local.get(BOARD_STORE); board = validBoard(b) ? { words: b.words, turned: b.turned } : dealBoard(); local.set(BOARD_STORE, board); }
 }
-const save = () => { local.set(BOARD_STORE, board); local.set(KEY_STORE, key); };
+const save = () => { local.set(BOARD_STORE, board); local.set(KEY_STORE, key); touch(); };
 
 // ───────────────────────── BOARD ─────────────────────────
 // A face-down card is tan. Tap it when a team picks it and it turns to its colour from the key
@@ -346,7 +352,10 @@ function renderRoom() {
   const label = r.code ? `Room ${r.code}` : r.text;
   const extra = r.code && r.on && r.count > 1 ? ` · ${r.count} screens` : r.code && !r.on ? ` · ${r.text || 'Offline'}` : '';
   b.innerHTML = `<span class="dot ${r.on && r.code ? 'on' : ''}"></span>${esc(label)}<small>${esc(extra)}</small>`;
-  $('roomMine').textContent = r.code || '—';
+  $('roomMine').textContent = $('landRoom').textContent = r.code || '—';
+  $('landRoomInfo').textContent = r.code && r.on
+    ? (r.count > 1 ? `${r.count} screens in this room.` : 'Only this screen is in this room so far.')
+    : r.text || "You're offline.";
   $('roomCount').textContent = r.code && r.on
     ? (r.count > 1 ? `${r.count} screens are in this room.` : 'Only this screen is in the room so far.')
     : r.text || "You're offline.";
@@ -367,11 +376,11 @@ async function startRoom() {
     const r = shareRoom({
       game: 'cn',
       onState: onRoomState,
-      onStatus: st => { roomState = st; if (st.code) local.set(ROOM_STORE, st.code); renderRoom(); },
+      onStatus: st => { roomState = st; if (st.code) { local.set(ROOM_STORE, st.code); touch(); } renderRoom(); },
     });
     room = r;
     // Back to the room this screen was in, if it's still there; otherwise a new one.
-    const saved = local.get(ROOM_STORE);
+    const saved = stale ? null : local.get(ROOM_STORE);
     if (!saved || await r.join(saved) !== 'ok') await r.create(ownParts());
   } catch (e) {
     room = null;
@@ -405,6 +414,20 @@ async function joinRoom() {
 }
 $('btnRoom').onclick = openRoomDlg;
 $('btnRoomJoin').onclick = joinRoom;
+// New room (landing page, or the room dialog): leave this room for a fresh random code, taking
+// this screen's game along. say(text) shows progress next to the button that was tapped.
+async function newRoom(btn, say) {
+  if (!room || room === 'starting') { say("You're offline. A new room needs internet."); return; }
+  say('Opening a new room…'); btn.disabled = true;
+  try {
+    ensureGame();
+    const code = await room.create({ words: board.words, turned: board.turned, first: key.first, cells: key.cells });
+    say(`New room ${code}. Other screens can join it with that code.`);
+  } catch (e) { say('Could not open a new room: ' + (e.message || e)); }
+  finally { btn.disabled = false; }
+}
+$('btnRoomNew').onclick = () => { $('roomInput').value = ''; newRoom($('btnRoomNew'), t => $('roomMsg').textContent = t); };
+$('btnLandNew').onclick = () => newRoom($('btnLandNew'), t => $('landRoomMsg').textContent = t);
 $('btnRoomCancel').onclick = closeRoomDlg;
 $('roomInput').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
 dlg.addEventListener('click', e => { if (e.target === dlg) closeRoomDlg(); });
@@ -413,7 +436,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRoomDlg
 function openChoose() {
   history.replaceState(null, '', location.pathname + location.search);
   document.body.classList.remove('cn-wide');
-  show('choose');
+  show('choose'); startRoom();
 }
 
 // ───────────────────────── PAGE ─────────────────────────

@@ -28,6 +28,8 @@
       <button id="btnRoomCancel">Cancel</button>
       <button class="primary" id="btnRoomJoin">Join</button>
     </div>
+    <p class="muted center" style="font-size:14px;margin:14px 0 6px">Or start over in a room of this screen's own:</p>
+    <button id="btnRoomNew" style="width:100%">New room</button>
   </div>
 </div>
 
@@ -59,6 +61,18 @@
     <div class="big-choice">
       <button id="btnBoard">Board<small>The 25 word cards, for a TV or big screen everyone can see. Tap a card when it's picked to show its colour.</small></button>
       <button id="btnKey">Spymaster<small>The secret key card, for the spymasters' phones only. A white dot marks each card already turned on the board.</small></button>
+    </div>
+    <div class="panel cn-room">
+      <div>
+        <div class="pick-head" style="margin:0"><b>Room</b></div>
+        <div class="code" id="landRoom">—</div>
+        <div class="muted" id="landRoomInfo" style="font-size:14px"></div>
+      </div>
+      <div class="cn-room-new">
+        <button id="btnLandNew">New room</button>
+        <div class="muted" id="landRoomMsg" style="font-size:14px"></div>
+      </div>
+      <p class="muted" style="font-size:14px;margin:0;flex-basis:100%">Screens in the same room share one game. To join another screen's room, open Board or Spymaster and tap the room code in the top corner.</p>
     </div>
     <div class="panel">
       <div class="pick-head"><b>Word list</b></div>

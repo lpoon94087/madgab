@@ -248,3 +248,7 @@ body.cn #choose { display: flex; flex-direction: column; gap: 16px; }
   .cn-finale.assassin .finale-box { animation: none; }
   .confetti { display: none; }
 }
+/* Codenames start screen: this screen's room and a New room button */
+.cn-room { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.cn-room .code { margin: 4px 0; }
+.cn-room-new { text-align: right; max-width: 260px; }
