@@ -5,7 +5,7 @@ import { $, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../share
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.2', RELEASED = '2026-11-19';
+const VERSION = '2.4', RELEASED = '2026-11-19';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -22,7 +22,7 @@ const local = {
 //   key   = { first, cells }   who goes first, and what each of the 25 places is:
 //                              'red' | 'blue' | 'bystander' | 'assassin' (9 / 8 / 7 / 1)
 // Place i on the key is card i on the board. Both are shared through the room.
-let words = [], board = null, key = null;   // words: the pool to deal from, [{ w, group }]
+let words = [], board = null, key = null;   // words: the pool to deal from, [{ w, tags }]
 // Which parts this screen brings to a room. A board screen brings both (it needs the key to know
 // each card's colour); a spymaster screen brings the key. A room missing a part gets it from the
 // first screen that has it.
@@ -30,13 +30,16 @@ const mine = { board: false, key: false };
 const validBoard = b => b && Array.isArray(b.words) && b.words.length === 25 && Array.isArray(b.turned) && b.turned.length === 25;
 const validKey = k => k && (k.first === 'red' || k.first === 'blue') && Array.isArray(k.cells) && k.cells.length === 25;
 const sameKey = (a, b) => a && b && a.first === b.first && a.cells.join() === b.cells.join();
-// A word in a list may name a group ("LONDON #city"): a board gets at most one word from each
-// group, so a spymaster can't link two of them with a clue like "cities".
+// A word in a list may have tags ("LONDON #city", "WITCH #person #creature"): a board never gets
+// two words that share a tag, so a spymaster can't link two of them with a clue like "cities".
+// The start screen's "One word per category" box turns this off, for a board dealt at random.
+const ONE_TAG_STORE = 'cn.oneTag';
+const oneTag = () => local.get(ONE_TAG_STORE) !== false;
 function dealBoard() {
-  const out = [], used = new Set();
-  for (const { w, group } of shuffle([...words])) {
-    if (group && used.has(group)) continue;
-    if (group) used.add(group);
+  const out = [], used = new Set(), check = oneTag();
+  for (const { w, tags } of shuffle([...words])) {
+    if (check && tags.some(t => used.has(t))) continue;
+    tags.forEach(t => used.add(t));
     out.push(w);
     if (out.length === 25) break;
   }
@@ -345,7 +348,7 @@ initMenu(() => {
 // new game with the new words (for its whole room).
 const LISTS_STORE = 'cn.lists';
 let lists = [], listsChanged = false;
-const parse = line => { const [w, g] = line.split('#'); return { w: w.trim().toUpperCase(), group: (g || '').trim() }; };
+const parse = line => { const [w, ...tags] = line.split('#'); return { w: w.trim().toUpperCase(), tags: tags.map(t => t.trim()).filter(Boolean) }; };
 function chosenIds() {
   const saved = local.get(LISTS_STORE);
   const ids = Array.isArray(saved) ? saved.filter(id => lists.some(l => l.id === id)) : [];
@@ -355,7 +358,7 @@ function buildPool() {
   const seen = new Map();
   for (const l of lists) if (chosenIds().includes(l.id)) for (const e of l.words) if (!seen.has(e.w)) seen.set(e.w, e);
   const addon = params.get('addon');
-  if (addon) for (const w of addon.split(',').map(x => x.trim().toUpperCase()).filter(Boolean)) if (!seen.has(w)) seen.set(w, { w, group: '' });
+  if (addon) for (const w of addon.split(',').map(x => x.trim().toUpperCase()).filter(Boolean)) if (!seen.has(w)) seen.set(w, { w, tags: [] });
   words = [...seen.values()];
   $('listInfo').textContent = words.length >= 25
     ? `${words.length} words to deal from.`
@@ -363,6 +366,8 @@ function buildPool() {
   $('btnBoard').disabled = $('btnKey').disabled = words.length < 25;
 }
 function renderLists() {
+  $('optOneTag').checked = oneTag();
+  $('optOneTag').onchange = () => { local.set(ONE_TAG_STORE, $('optOneTag').checked); listsChanged = true; };
   const ids = chosenIds();
   $('listChips').innerHTML = '';
   for (const l of lists) {
