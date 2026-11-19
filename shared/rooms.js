@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
-import { getDatabase, ref, set, get, onValue, onDisconnect, runTransaction } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js';
+import { getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js';
 import { $, esc, fmt, keepAwake } from './common.js';
 
 // Rooms: one moderator device runs a game, any number of viewer devices show a read-only copy.
@@ -215,7 +215,8 @@ export function viewRoom({ game, show, render: custom, params = { view: 'join', 
 //   onStatus({ text, on, count })   connection text, whether it's live, devices in the room
 // create(state) opens a new room with a random code; join(code) moves to an existing room
 // and resolves to 'ok', 'empty' (no game there), 'other' (another game's room) or 'bad' (not
-// 4 letters); send(state) changes the state for everyone in the room.
+// 4 letters); send(part) changes the given fields of the state for everyone in the room (the
+// other fields are kept, so devices can each look after their own part).
 export function shareRoom({ game, onState, onStatus }) {
   const ME = tabId(game);
   let code = null, unsubs = [], live = false, count = 0;
@@ -270,7 +271,7 @@ export function shareRoom({ game, onState, onStatus }) {
   }
   function send(state) {
     if (!code) return Promise.resolve();
-    return set(ref(db, `rooms/${code}/state`), { phase: 'shared', ...state, game });
+    return update(ref(db, `rooms/${code}/state`), { phase: 'shared', ...state, game });
   }
 
   return { create, join, send, code: () => code };

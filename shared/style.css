@@ -195,9 +195,13 @@ body.cn-wide main { max-width: 1400px; }
   font-weight: 900; font-size: clamp(20px, 7vw, 40px); box-shadow: inset 0 -3px 0 rgba(0,0,0,.25); }
 .cn-spot.red { background: var(--cnRed); }
 .cn-spot.blue { background: var(--cnBlue); }
-.cn-spot.bystander { background: var(--cnGrey); }
+.cn-spot.bystander { background: var(--cnTan); }
 .cn-spot.assassin { background: var(--cnBlack); color: #fff; outline: 2px solid #555; outline-offset: -2px; }
 body.cn #board, body.cn #key { display: flex; flex-direction: column; gap: 14px; }
 .room-btn { margin-left: auto; padding: 8px 12px; font-size: 15px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); white-space: nowrap; }
 .room-btn small { color: var(--muted); font-weight: 500; }
 body.cn header .status:empty { display: none; }
+/* A key square whose board card has been turned */
+.cn-spot { position: relative; }
+.cn-spot.turned::after { content: ''; position: absolute; top: 7%; right: 7%; width: 22%; aspect-ratio: 1; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,.35); }

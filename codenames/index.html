@@ -16,11 +16,11 @@
 
 <div id="roomDlg" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="roomTitle">
   <div class="panel">
-    <h2 id="roomTitle">Spymaster <span>room</span></h2>
-    <p style="margin:6px 0 2px">This phone's room</p>
+    <h2 id="roomTitle">Game <span>room</span></h2>
+    <p style="margin:6px 0 2px">This screen's room</p>
     <div class="code" id="roomMine">—</div>
     <p class="muted" style="font-size:15px" id="roomCount"></p>
-    <p class="muted" style="font-size:15px">Every phone in a room shows the same key, and <b>New key</b> on any of them changes it on all of them. To share a key, type the room code from the other spymaster's phone:</p>
+    <p class="muted" style="font-size:15px">Every screen in a room, the board and the spymasters' phones, shows the same game: the same board, the same key, and a white dot on the key for each card turned on the board. To join another screen's game, type the room code shown on it:</p>
     <input id="roomInput" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD"
       style="font: 700 28px/1 ui-monospace, Menlo, monospace; letter-spacing: 6px; text-transform: uppercase; text-align: center">
     <p class="muted" id="roomMsg" style="font-size:15px;min-height:1.4em;margin:8px 0"></p>
@@ -36,7 +36,7 @@
     <h2 id="aboutTitle">Code<span>names</span></h2>
     <div class="muted" id="aboutVersion"></div>
     <p id="aboutCards"></p>
-    <p class="muted" style="font-size:15px">Put the board on a big shared screen and tap a card to change its colour. Spymasters open the Spymaster key on their phones; phones in the same room show the same key.</p>
+    <p class="muted" style="font-size:15px">Put the board on a big shared screen and tap a card to change its colour. Spymasters open the Spymaster key on their phones. Screens in the same room share the board and the key.</p>
     <button class="primary" id="btnAboutClose" style="width:100%">Close</button>
   </div>
 </div>
@@ -46,7 +46,7 @@
   <section id="choose" class="hidden">
     <div class="big-choice">
       <button id="btnBoard">Board<small>The 25 word cards, for a TV or big screen everyone can see. Tap a card to change its colour.</small></button>
-      <button id="btnKey">Spymaster<small>The secret key card, for the spymasters' phones only. Phones in the same room show the same key.</small></button>
+      <button id="btnKey">Spymaster<small>The secret key card, for the spymasters' phones only. A white dot marks each card already turned on the board.</small></button>
     </div>
     <p class="center"><a class="back" href="../">← Home</a></p>
   </section>
@@ -54,7 +54,7 @@
   <!-- The shared board -->
   <section id="board" class="hidden">
     <div class="cn-board" id="wordBoard"></div>
-    <p class="muted center" style="font-size:14px;margin:0">Tap a card to go tan → grey → red → blue → black. Reloading the page deals a new board.</p>
+    <p class="muted center" style="font-size:14px;margin:0">Tap a card to go tan → grey → red → blue → black. Tap the room code in the corner to join another screen's game.</p>
   </section>
 
   <!-- The spymasters' key card -->
