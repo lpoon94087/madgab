@@ -211,7 +211,8 @@ body.cn header .status:empty { display: none; }
 .cn-key.words .cn-spot.bystander { color: #2a2218; text-shadow: none; }
 .cn-key-words { display: flex; align-items: center; justify-content: center; gap: 8px 10px; flex-wrap: wrap; }
 .cn-key-words .chips { justify-content: center; }
-.cn-key-words .chip { padding: 5px 10px; font-size: 14px; gap: 6px; }
+.cn-key-words .chip { padding: 4px 9px; font-size: 14px; gap: 5px; }
+.cn-key-words .chips { gap: 6px; }
 .cn-key.words .cn-spot.turned span { opacity: .45; }
 .cn-key.words .cn-spot.turned::after { width: 14%; top: 8%; right: 5%; }
 .cn-spot.turned::after { content: ''; position: absolute; top: 7%; right: 7%; width: 22%; aspect-ratio: 1; border-radius: 50%;
