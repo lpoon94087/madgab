@@ -5,7 +5,7 @@ import { $, ask, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.21', RELEASED = '2026-11-19';
+const VERSION = '2.22', RELEASED = '2026-11-20';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -286,18 +286,43 @@ const sendGame = () => send({ words: board.words, turned: board.turned, first: k
 // ───────────────────────── SPYMASTER KEY ─────────────────────────
 // 9 places for the team that goes first, 8 for the other, 7 bystanders, 1 assassin. The frame's
 // colour says who goes first. A white dot marks each place whose card is turned on the board.
+// With "Show words" on (cn.keyWords, the default) each place also shows its board word, sized to fit.
+const KEY_WORDS_STORE = 'cn.keyWords';
+const keyWords = () => local.get(KEY_WORDS_STORE) !== false;
 function renderKey() {
   if (!key) return;
-  $('keyCard').className = `cn-key first-${key.first}`;
-  $('keyCard').innerHTML = key.cells.map(c => `<div class="cn-spot ${c}">${c === 'assassin' ? '✕' : ''}</div>`).join('');
+  $('keyCard').className = `cn-key first-${key.first}${keyWords() ? ' words' : ''}`;
+  $('keyCard').innerHTML = key.cells.map(c => `<div class="cn-spot ${c}"><span></span></div>`).join('');
   $('keyFirst').className = `cn-first first-${key.first}`;
   $('keyFirst').textContent = `${key.first === 'red' ? 'Red' : 'Blue'} goes first`;
+  $('optKeyWords').checked = keyWords();
   renderMarks();
 }
+// The dots for turned cards, and the words (which change when the room deals a new board).
 function renderMarks() {
-  const turned = board ? board.turned : [];
-  [...$('keyCard').children].forEach((spot, i) => spot.classList.toggle('turned', !!turned[i]));
+  const turned = board ? board.turned : [], withWords = keyWords();
+  let changed = false;
+  [...$('keyCard').children].forEach((spot, i) => {
+    spot.classList.toggle('turned', !!turned[i]);
+    const text = withWords ? (board ? board.words[i] : '') : (key.cells[i] === 'assassin' ? '✕' : '');
+    const span = spot.firstChild;
+    if (span.textContent !== text) { span.textContent = text; changed = true; }
+  });
+  if (changed) fitKeyWords();
 }
+// Shrink each word until it fits across its place (long words get smaller type than short ones).
+function fitKeyWords() {
+  const card = $('keyCard');
+  if (!card.classList.contains('words') || !card.offsetWidth) return;
+  for (const spot of card.children) {
+    const span = spot.firstChild, room = spot.clientWidth * 0.9;
+    let size = Math.min(spot.clientHeight * 0.36, 26);
+    span.style.fontSize = size + 'px';
+    while (size > 6 && span.scrollWidth > room) { size *= 0.92; span.style.fontSize = size + 'px'; }
+  }
+}
+addEventListener('resize', () => { if (!$('key').classList.contains('hidden')) fitKeyWords(); });
+$('optKeyWords').addEventListener('change', e => { local.set(KEY_WORDS_STORE, e.target.checked); renderKey(); });
 
 function openKey() {
   ensureGame(); freshFromPicker();
@@ -305,7 +330,7 @@ function openKey() {
   renderKey();
   history.replaceState(null, '', '#spymaster');
   document.body.classList.remove('cn-wide');
-  show('key'); keepAwake(); startRoom(); fillRoom();
+  show('key'); fitKeyWords(); keepAwake(); startRoom(); fillRoom();
 }
 
 // ───────────────────────── ROOM ─────────────────────────
