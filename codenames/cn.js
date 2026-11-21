@@ -5,7 +5,7 @@ import { $, ask, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.25', RELEASED = '2026-11-20';
+const VERSION = '2.26', RELEASED = '2026-11-20';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -286,14 +286,14 @@ const sendGame = () => send({ words: board.words, turned: board.turned, first: k
 // ───────────────────────── SPYMASTER KEY ─────────────────────────
 // 9 places for the team that goes first, 8 for the other, 7 bystanders, 1 assassin. The frame's
 // colour says who goes first. A white dot marks each place whose card is turned on the board.
-// Each place can also show its board word, sized to fit. Which colours show their words is
-// picked under the key (cn.keyWords: a list of 'red', 'blue', 'bystander'; all by default) and
-// remembered per phone. The assassin always shows its word.
-const KEY_WORDS_STORE = 'cn.keyWords', KEY_COLOURS = ['red', 'blue', 'bystander'];
+// Each place can also show its board word, sized to fit. Which words show is picked under the
+// key (cn.keyWords: a list of 'red', 'blue', 'other'; all by default) and remembered per phone.
+// 'other' is the neutral (tan) cards and the assassin (black).
+const KEY_WORDS_STORE = 'cn.keyWords', KEY_PICKS = ['red', 'blue', 'other'];
 function keyWords() {
   const saved = local.get(KEY_WORDS_STORE);
-  const picked = saved === false ? [] : Array.isArray(saved) ? saved.filter(c => KEY_COLOURS.includes(c)) : KEY_COLOURS;
-  return [...picked, 'assassin'];
+  const picked = saved === false ? [] : Array.isArray(saved) ? saved.map(c => c === 'bystander' ? 'other' : c).filter(c => KEY_PICKS.includes(c)) : KEY_PICKS;
+  return picked.flatMap(c => c === 'other' ? ['bystander', 'assassin'] : [c]);
 }
 function renderKey() {
   if (!key) return;
@@ -301,7 +301,7 @@ function renderKey() {
   $('keyCard').innerHTML = key.cells.map(c => `<div class="cn-spot ${c}"><span></span></div>`).join('');
   $('keyFirst').className = `cn-first first-${key.first}`;
   $('keyFirst').textContent = `${key.first === 'red' ? 'Red' : 'Blue'} goes first`;
-  document.querySelectorAll('#keyWordChips input').forEach(box => box.checked = keyWords().includes(box.value));
+  document.querySelectorAll('#keyWordChips input').forEach(box => box.checked = keyWords().includes(box.value === 'other' ? 'bystander' : box.value));
   renderMarks();
 }
 // The dots for turned cards, and the words (which change when the room deals a new board).
