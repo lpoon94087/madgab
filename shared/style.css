@@ -207,7 +207,7 @@ body.cn header .status:empty { display: none; }
 .cn-key.words { width: min(100%, 760px); gap: clamp(3px, 1vw, 8px); padding: clamp(6px, 2vw, 16px); border-width: clamp(8px, 2.5vw, 18px); }
 .cn-key.words .cn-spot { aspect-ratio: 3 / 2; border-radius: 5px; color: #fff; font-weight: 500; text-shadow: 0 1px 1px rgba(0,0,0,.25);
   font-family: "Avenir Next Condensed", "Roboto Condensed", "Arial Narrow", sans-serif-condensed, system-ui, sans-serif; letter-spacing: 0; }
-.cn-key.words .cn-spot span { white-space: nowrap; line-height: 1; }
+.cn-key.words .cn-spot span { white-space: nowrap; line-height: 1.05; text-align: center; }
 .cn-key.words .cn-spot.bystander { color: #2a2218; text-shadow: none; }
 .cn-key-words { display: flex; align-items: center; justify-content: center; gap: 8px 10px; flex-wrap: wrap; }
 .cn-key-words .chips { justify-content: center; }

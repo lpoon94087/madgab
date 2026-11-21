@@ -5,7 +5,7 @@ import { $, ask, esc, shuffle, lines, keepAwake, initMenu, initAbout } from '../
 // Words come from the lists in lists/ (named in lists.json), picked on the start screen;
 // ?addon=WORD,WORD adds more. The revealed-card pictures are in img/,
 // listed in images.json. ?demo turns a random card every second, for showing the board off.
-const VERSION = '2.24', RELEASED = '2026-11-20';
+const VERSION = '2.25', RELEASED = '2026-11-20';
 
 const params = new URLSearchParams(location.search);
 const views = ['choose', 'board', 'key'];
@@ -313,19 +313,21 @@ function renderMarks() {
     const c = key.cells[i];
     const text = withWords.includes(c) && board ? board.words[i] : '';
     const span = spot.firstChild;
-    if (span.textContent !== text) { span.textContent = text; changed = true; }
+    // A two-word entry like SCUBA DIVER goes on two lines, so it can be bigger.
+    if (span.dataset.word !== text) { span.dataset.word = text; span.innerHTML = text.split(' ').map(esc).join('<br>'); changed = true; }
   });
   if (changed) fitKeyWords();
 }
-// Shrink each word until it fits across its place (long words get smaller type than short ones).
+// Shrink each word until it fits across (and, on two lines, down) its place: long words get
+// smaller type than short ones.
 function fitKeyWords() {
   const card = $('keyCard');
   if (!card.classList.contains('words') || !card.offsetWidth) return;
   for (const spot of card.children) {
-    const span = spot.firstChild, room = spot.clientWidth * 0.9;
+    const span = spot.firstChild, room = spot.clientWidth * 0.9, high = spot.clientHeight * 0.9;
     let size = Math.min(spot.clientHeight * 0.36, 26);
     span.style.fontSize = size + 'px';
-    while (size > 6 && span.scrollWidth > room) { size *= 0.92; span.style.fontSize = size + 'px'; }
+    while (size > 6 && (span.scrollWidth > room || span.offsetHeight > high)) { size *= 0.92; span.style.fontSize = size + 'px'; }
   }
 }
 addEventListener('resize', () => { if (!$('key').classList.contains('hidden')) fitKeyWords(); });
